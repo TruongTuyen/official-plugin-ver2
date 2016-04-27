@@ -1,16 +1,16 @@
 <?php
 /*
-Plugin Name: Manage Teamwork
+Plugin Name: Manage Teamwork Version 2
 Description: Wordpress Plugin đơn giản quản lý thông tin một teamwork.
 Plugin URI:  https:localhost
 Author URI:  https:localhost
 Author:      Truong Tuyen Anh
-License:     Public Domain
-Version:     1.0
+Version:     2.0
 Text Domain: simple_plugin
 */
-define( TT_DIR_PATH, plugin_dir_path( __FILE__ ) ); //Lấy ra dường dẫn tuyệt đối tới thu muc của plugin này 
-define( TT_DIR_URL, plugin_dir_url( __FILE__ ) ); //Lấy ra url của plugin này
+
+define( 'TT_DIR_PATH', plugin_dir_path( __FILE__ )); //Lấy ra dường dẫn tuyệt đối tới thu muc của plugin này 
+define( 'TT_DIR_URL', plugin_dir_url( __FILE__ )); //Lấy ra url của plugin này
 
 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );//sử dụng file này để có thể dùng hàm dbDelta();
 require_once TT_DIR_PATH . 'classes/class.TT_KyNang.php';  //Class Ky Nang xu ly thong tin liên quan den ky nang
@@ -22,11 +22,12 @@ if (!class_exists('WP_List_Table')) {
 }
 
 class TT_Teamwork{
-    public $my_db_version = '1.0';
+    public $my_db_version = '2.0';
     
     function __construct(){
+        echo "hang: TT_DIR_PATH: " . TT_DIR_PATH;
         register_activation_hook( __FILE__,  array( $this, 'create_table' ) );//Đăng ký activation_hook thông qua hàm create_table để tạo ra các bảng dữ liệu cần thiết khi kích hoạt plugin
-        register_activation_hook( __FILE__,  array( $this, 'dummy_data' ) );//Đăng ký activation_hook thông qua hàm dummy_data để chèn dữ liệu mẫu vào các bảng plugin, tránh các lỗi không có dữ liệu
+        //register_activation_hook( __FILE__,  array( $this, 'dummy_data' ) );//Đăng ký activation_hook thông qua hàm dummy_data để chèn dữ liệu mẫu vào các bảng plugin, tránh các lỗi không có dữ liệu
         register_deactivation_hook( __FILE__, array( $this, 'delete_table' ) );//Đăng ký deactivation_hook để tiến hành xóa các bảng dữ liệu khi ngừng kích hoạt plugin
         
         add_action( 'admin_menu', array( $this, 'register_setting_menu' ) );
@@ -36,13 +37,25 @@ class TT_Teamwork{
     public function create_table(){
         global $wpdb;
         $query = "
+            CREATE TABLE {$wpdb->prefix}doitac(
+                id_doitac BIGINT NOT NULL AUTO_INCREMENT,
+                hoten VARCHAR(100) NOT NULL,
+                tendonvi VARCHAR(100) NOT NULL,
+                loai VARCHAR(50) NOT NULL,
+                mota TEXT NULL,
+                display_status VARCHAR(20) NOT NULL,
+                PRIMARY KEY (id_doitac)
+            );
+            
             CREATE TABLE {$wpdb->prefix}duan(
                 id_duan BIGINT NOT NULL AUTO_INCREMENT,
+                id_doitac BIGINT NOT NULL,
                 tenduan VARCHAR(225) NOT NULL,
-                thoigianbatdau DATETIME NOT NULL,
-                thoigianketthuc DATETIME NOT NULL,
-                trangthai VARCHAR(225) NOT NULL,
-                ghichu TEXT NULL,
+                ngaybatdau DATETIME NOT NULL,
+                ngayketthuc DATETIME NOT NULL,
+                tinhtrangduan VARCHAR(225) NOT NULL,
+                mota TEXT NULL,
+                display_status VARCHAR(20) NOT NULL,
                 PRIMARY KEY (id_duan)   
             );
                          
@@ -53,13 +66,15 @@ class TT_Teamwork{
                 gioitinh VARCHAR(3) NOT NULL ,
                 quequan VARCHAR(225) NOT NULL , 
                 avatar VARCHAR(255) NOT NULL,
+                display_status VARCHAR(20) NOT NULL,
                 PRIMARY KEY (id_nhanvien)
             );
             
             CREATE TABLE {$wpdb->prefix}kynang(
                 id_kynang BIGINT NOT NULL AUTO_INCREMENT,
                 tenkynang VARCHAR(225) NOT NULL,
-                chuthich TEXT NULL,
+                mota TEXT NULL,
+                display_status VARCHAR(20) NOT NULL,
                 PRIMARY KEY (id_kynang)
             );
             
@@ -76,6 +91,31 @@ class TT_Teamwork{
                 id_nhanvien BIGINT NOT NULL,
                 PRIMARY KEY (id)
             ); 
+            
+            CREATE TABLE {$wpdb->prefix}hangmuc(
+                id_hangmuc BIGINT NOT NULL AUTO_INCREMENT,
+                id_duan BIGINT NOT NULL,
+                ten_hangmuc VARCHAR(100) NOT NULL,
+                noi_dung TEXT NOT NULL,
+                ngaybatdau DATETIME NOT NULL,
+                ngayketthuc DATETIME NOT NULL, 
+                display_status VARCHAR(20) NOT NULL,
+                phantram_hoanthanh INT UNSIGNED NOT NULL,
+                trangthai_hangmuc VARCHAR(255) NOT NULL,
+                PRIMARY KEY (id_hangmuc)
+            );
+            
+            CREATE TABLE {$wpdb->prefix}congviec(
+                id_congviec BIGINT NOT NULL AUTO_INCREMENT,
+                id_hangmuc BIGINT NOT NULL,
+                nhanvien_thamgia TEXT NOT NULL,
+                noidung_congviec TEXT NOT NULL,
+                ngaybatdau DATETIME NOT NULL,
+                ngayketthuc DATETIME NOT NULL, 
+                display_status VARCHAR(20) NOT NULL,
+                trangthai_congviec VARCHAR(255) NOT NULL,
+                PRIMARY KEY (id_congviec)
+            );
         ";
         dbDelta( $query );
     }
@@ -94,7 +134,7 @@ class TT_Teamwork{
     
     public function delete_table(){
         global $wpdb;
-        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}duan`, `{$wpdb->prefix}nhanvien`, `{$wpdb->prefix}kynang`, `{$wpdb->prefix}chitiet_duan`, `{$wpdb->prefix}chitiet_kynang`";
+        $sql = "DROP TABLE IF EXISTS `{$wpdb->prefix}doitac`, `{$wpdb->prefix}duan`, `{$wpdb->prefix}nhanvien`, `{$wpdb->prefix}kynang`, `{$wpdb->prefix}chitiet_duan`, `{$wpdb->prefix}chitiet_kynang`,`{$wpdb->prefix}hangmuc`, `{$wpdb->prefix}congviec`";
         $wpdb->query( $sql );
         $this->del_db_version();
     }
