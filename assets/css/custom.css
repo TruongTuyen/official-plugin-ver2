@@ -1,0 +1,73 @@
+.clearfix{
+    float:none;
+    clear:both;
+    
+}
+.each_member{
+    height: 400px;
+    float: left;
+    margin: 0 10px 30px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background: #ddd;
+}
+
+.each_member .member_avatar img{
+    width: 100%;
+    height: 250px;
+}
+
+.team_member, .team_project{
+    position: relative;
+}
+
+.owl-controls .owl-prev, .owl-controls .owl-next{
+    position: absolute;
+    top: 40%;
+}
+.owl-controls .owl-prev{
+    left: 30px;
+    background: #7B7B7B;
+    text-transform: uppercase;
+    width: 30px;
+    height: 30px;
+    word-wrap: break-word;
+    color: white;
+    text-align: center;
+    line-height: 30px;
+    font-weight:bold;
+    font-size:24px;
+    visibility:hidden;
+    opacity: 0;
+    transition: all 0.3s ease 0s;
+}
+.owl-controls .owl-next{
+    right:40px;
+    background: #7B7B7B;
+    text-transform: uppercase;
+    width: 30px;
+    height: 30px;
+    word-wrap: break-word;
+    color: white;
+    text-align: center;
+    line-height: 30px;
+    font-weight:bold;
+    font-size:24px;
+    visibility:hidden;
+    opacity: 0;
+    transition: all 0.3s ease 0s;
+}
+
+.team_member:hover .owl-controls .owl-prev,
+.team_project:hover .owl-controls .owl-prev{
+    left:0;
+    opacity: 1;
+    visibility: inherit;
+} 
+.team_member:hover .owl-controls .owl-next,
+.team_project:hover .owl-controls .owl-next{
+    right: 10px;
+    opacity: 1;
+    visibility: inherit;
+} 
