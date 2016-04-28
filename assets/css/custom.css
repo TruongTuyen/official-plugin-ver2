@@ -71,3 +71,45 @@
     opacity: 1;
     visibility: inherit;
 } 
+
+.accordionButton {
+    width:95%;
+    float:left;
+    background:#80C347;
+    border-bottom: 1px solid #FFFFFF;
+    cursor: pointer;
+    padding:3px 0px;}
+.accordionButton span {
+    color:#FFFFFF;
+    padding-left:5px;
+    font-weight:bold;}
+.accordionContent {
+    width:95%;
+    float:left;
+    background:#FFFFFF;}
+.accordionContent p {
+    color:#333333;
+    font-size:14px;
+    padding-left:8px;}
+.on {
+    width:95%;
+    float:left;
+    background:#555555;
+    cursor:pointer;}
+    .on span {color:#FFFFFF;}
+.over {
+    width:95%;
+    float:left;
+    background:#555555;
+    cursor:pointer;}
+    .over span {color:#FFFFFF;}
+.plusMinus {
+    font-weight:bold;
+    float:right;
+    padding-right:4px;
+    content:"+";}
+    
+.clearfix{
+    float: none;
+    clear: both;
+}    

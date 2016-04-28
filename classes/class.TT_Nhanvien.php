@@ -92,6 +92,8 @@ class TT_Nhanvien extends WP_List_Table{
         );
         return $actions;
     }
+    
+    
 
     function process_bulk_action(){
         global $wpdb;
@@ -507,6 +509,65 @@ class TT_Nhanvien extends WP_List_Table{
         }
         
     }
+    
+    public static function render_list_checkbox_nhanvien( $display_status = 'show', $checkbox_name = "id_nhanvien_thamgia[]" ){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'nhanvien';
+        
+        if( $display_status == 'show' ){
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s", $display_status ), ARRAY_A );
+        }else if( $display_status == 'hidden' ){
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s", $display_status ), ARRAY_A );
+        }else if( $display_status == 'all' ){    
+            $result = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
+        }
+        ob_start();
+        if( !empty( $result ) ){
+            foreach( $result as $key => $value ){
+                printf( '<input type="checkbox" value="%d" name="%s"> %s </br>', $value['id_nhanvien'], $checkbox_name, $value['hoten'] );
+            }
+        }else{
+            printf( '<input type="checkbox" value="%d" name="%s"> %s </br>', 0, $checkbox_name, __( "Vui lòng thêm dữ liệu nhân viên trước khi chọn", "simple_plugin" ) );
+        }
+        
+        return ob_get_clean();
+    }
+    
+    public static function render_select_option_nhanvien( $nhanvien_display_status = "show", $id_selected_value = null ){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'nhanvien';
+        
+        if( $nhanvien_display_status == 'show' ){
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s", $nhanvien_display_status ), ARRAY_A );
+        }else if( $nhanvien_display_status == 'hidden' ){
+            $result = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s", $nhanvien_display_status ), ARRAY_A );
+        }else if( $nhanvien_display_status == 'all' ){    
+            $result = $wpdb->get_results( "SELECT * FROM {$table_name}", ARRAY_A );
+        }
+        
+        ob_start();
+        if( !empty( $result ) ){
+            foreach( $result as $key => $value ){
+               if( $id_selected_value ){
+                    if( $id_selected_value == $value['id_nhanvien'] ){
+                        $selected = 'selected="selected"';
+                    }else{
+                        $selected = '';
+                    }
+               }else{
+                    $selected = '';
+               } 
+               printf( '<option value="%d" %s>%s</option>', $value['id_nhanvien'], $selected, $value['hoten'] );
+            }
+        }else{
+            printf( '<option value="%d">%s</option>', 0, __( "Vui lòng thêm dữ liệu về nhân viên trước khi chọn.", "simple_plugin" ) );
+        }
+        
+        return ob_get_clean();
+        
+    } 
+    
+    
     
 }
 

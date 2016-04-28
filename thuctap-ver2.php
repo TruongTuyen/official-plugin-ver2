@@ -16,6 +16,7 @@ require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );//sử dụng file nà
 require_once TT_DIR_PATH . 'classes/class.TT_KyNang.php';  //Class Ky Nang xu ly thong tin liên quan den ky nang
 require_once TT_DIR_PATH . 'classes/class.TT_Nhanvien.php';//Class Nhan Vien xu ly thong tin lien quan den nhan vien
 require_once TT_DIR_PATH . 'classes/class.TT_Duan.php';//Class Du An xu ly thong tin lien quan den du an
+require_once TT_DIR_PATH . 'classes/class.TT_Doitac.php';//Class Du An xu ly thong tin lien quan den du an
 
 if (!class_exists('WP_List_Table')) {
     require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
@@ -27,7 +28,7 @@ class TT_Teamwork{
     function __construct(){
         echo "hang: TT_DIR_PATH: " . TT_DIR_PATH;
         register_activation_hook( __FILE__,  array( $this, 'create_table' ) );//Đăng ký activation_hook thông qua hàm create_table để tạo ra các bảng dữ liệu cần thiết khi kích hoạt plugin
-        //register_activation_hook( __FILE__,  array( $this, 'dummy_data' ) );//Đăng ký activation_hook thông qua hàm dummy_data để chèn dữ liệu mẫu vào các bảng plugin, tránh các lỗi không có dữ liệu
+        register_activation_hook( __FILE__,  array( $this, 'dummy_data' ) );//Đăng ký activation_hook thông qua hàm dummy_data để chèn dữ liệu mẫu vào các bảng plugin, tránh các lỗi không có dữ liệu
         register_deactivation_hook( __FILE__, array( $this, 'delete_table' ) );//Đăng ký deactivation_hook để tiến hành xóa các bảng dữ liệu khi ngừng kích hoạt plugin
         
         add_action( 'admin_menu', array( $this, 'register_setting_menu' ) );
@@ -150,6 +151,51 @@ class TT_Teamwork{
     
     public function dummy_data(){
         global $wpdb;
+        //Dữ liệu cho bảng đối tác
+        $wpdb->insert( $wpdb->prefix . 'doitac', array(
+            'id_doitac'          => 1,
+            'hoten'              => 'Nguyễn Văn An',
+            'tendonvi'           => '',
+            'loai'               => 'cá nhân', //doanh nghiệp
+            'mota'               => '',
+            'display_status'     => 'show', //hidden   
+        ));
+        
+        $wpdb->insert( $wpdb->prefix . 'doitac', array(
+            'id_doitac'          => 2,
+            'hoten'              => 'Nguyễn Văn Bùi',
+            'tendonvi'           => '',
+            'loai'               => 'cá nhân', //doanh nghiệp
+            'mota'               => '',
+            'display_status'     => 'show', //hidden   
+        ));
+        $wpdb->insert( $wpdb->prefix . 'doitac', array(
+            'id_doitac'          => 3,
+            'hoten'              => '',
+            'tendonvi'           => 'Công ty phần mềm OTVINA',
+            'loai'               => 'doanh nghiệp', //doanh nghiệp
+            'mota'               => '',
+            'display_status'     => 'show', //hidden   
+        ));
+        
+        $wpdb->insert( $wpdb->prefix . 'doitac', array(
+            'id_doitac'          => 4,
+            'hoten'              => '',
+            'tendonvi'           => 'Công ty nội thất nhựa Incomtech',
+            'loai'               => 'doanh nghiệp', //doanh nghiệp
+            'mota'               => '',
+            'display_status'     => 'show', //hidden   
+        ));
+        
+        $wpdb->insert( $wpdb->prefix . 'doitac', array(
+            'id_doitac'          => 5,
+            'hoten'              => '',
+            'tendonvi'           => 'Công ty bất động sản nhadatphongthuy.vn',
+            'loai'               => 'doanh nghiệp', //doanh nghiệp
+            'mota'               => '',
+            'display_status'     => 'show', //hidden   
+        ));
+        
         //Dữ liệu mẫu cho bảng duan
         $wpdb->insert( $wpdb->prefix . 'duan', array(
             'id_duan'            => 1,
@@ -530,8 +576,13 @@ class TT_Teamwork{
         add_submenu_page( 'tt_teamwork', __( "Danh sách kỹ năng", "simple_plugin" ), __( "Danh sách kỹ năng", "simple_plugin" ), "activate_plugins", "ds_ky_nang", array( "TT_KyNang", "tt_kynang_page_callback" ) );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới kỹ năng", "simple_plugin" ), __( "Thêm mới kỹ năng", "simple_plugin" ), "activate_plugins", "new_kynang", array( "TT_KyNang", "tt_new_kynang_callback" ) );
     
+        add_submenu_page( 'tt_teamwork', __( "Danh sách đối tác", "simple_plugin" ), __( "Danh sách đối tác", "simple_plugin" ), "activate_plugins", "ds_doitac", array( "TT_Doitac", "tt_doitac_page_callback" ) );
+        add_submenu_page( 'tt_teamwork', __( "Thêm mới đối tác", "simple_plugin" ), __( "Thêm mới đối tác", "simple_plugin" ), "activate_plugins", "new_doitac", array( "TT_Doitac", "tt_new_doitac_callback" ) );
+    
         add_submenu_page( 'tt_teamwork', __( "Danh sách dự án", "simple_plugin" ), __( "Danh sách dự án", "simple_plugin" ), "activate_plugins", "ds_duan", array( "TT_Duan", "tt_duan_page_callback") );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới dự án", "simple_plugin" ), __( "Thêm mới dự án", "simple_plugin" ), "activate_plugins", "new_duan", array( "TT_Duan", "tt_new_duan_page_callback") );
+    
+        add_submenu_page( null, __( 'Custom page without menu', 'simple_plugin' ), __( 'Custom page without menu', 'simple_plugin' ), "activate_plugins", "new_custom_page", array( "TT_Duan", "tt_new_custom_page_callback") );
     }
     
     public function tt_load_languages(){
