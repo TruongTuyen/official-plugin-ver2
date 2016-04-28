@@ -255,8 +255,7 @@ $(document).ready( function(){
 $(document).ready(function(){
    $(".tenhangmuc").keyup(function(){
         current_value = $(this).val();
-        var current_node = $(this).closest(".accordionContent");
-        //$(this).closest(".accordionButton").find('.span_ten_hangmuc').text( current_value );
-        console.log(current_node);
+        $(this).closest(".accordionContent").siblings().find('.span_ten_hangmuc').text( current_value );
+        
    }); 
 });

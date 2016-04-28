@@ -311,7 +311,7 @@ class TT_Duan extends WP_List_Table{
                         </div>
                         <div class="hangmuc_items_wrapper">
                             <div class="accordionButton" id="a">
-                                <span># Hạng mục</span>: <span class="span_ten_hangmuc"></span>
+                                <span># Hạng mục</span><span>:</span> <span class="span_ten_hangmuc"></span>
                                 <span class="plusMinus">+</span>
                                 <span><a href="#" class="remove_hangmuc_button">Xóa</a></span>
                             </div>
