@@ -243,10 +243,30 @@ $(document).ready( function(){
     
 });
 
-//Button button_hangmuc_them_congviec
+//Lấy ra checkbox nhân viên cho từng công việc trong từng hang mục với các thành viên lấy từ danh sách các thành viên tham gia dự án.
 $(document).ready( function(){
-   $("#button_hangmuc_them_congviec").click(function(e){
-        e.preventDefault();
+   $("#nhanvien_thamgia_duan input[type=\"checkbox\"]").click(function(){
+        if( $(this).is(":checked") ){
+            var id_nhanvien = $(this).val();
+            var hoten_nhanvien = $(this).data('hoten');
+            var checkbox_code = '<span><input type="checkbox" class="nhanvien_tg_hangmuc_congviec" name="nhanvien_tg_hangmuc_congviec[]" value="'+ id_nhanvien +'" />'+hoten_nhanvien +'</br></span>';
+            
+            $(".nhanvien_tg_hangmuc_congviec").each(function(){
+                if( $(this).val() == id_nhanvien ){
+                    $(this).parent().remove();
+                }
+            });
+            
+            $("#nhanvien_thamgia_hangmuc_congviec").append( checkbox_code );
+            
+        }else{
+            var id_nhanvien = $(this).val();
+            $(".nhanvien_tg_hangmuc_congviec").each(function(){
+                if( $(this).val() == id_nhanvien ){
+                    $(this).parent().remove();
+                }
+            });
+        }
         
    });
 });
@@ -258,4 +278,12 @@ $(document).ready(function(){
         $(this).closest(".accordionContent").siblings().find('.span_ten_hangmuc').text( current_value );
         
    }); 
+});
+
+//Lấy ra checkbox nhân viên cho từng công việc trong từng hang mục với các thành viên lấy từ danh sách các thành viên tham gia dự án.
+$(document).ready(function(){
+    $('#load_nhanvien').click(function(e) {
+        
+    }); 
+    
 });
