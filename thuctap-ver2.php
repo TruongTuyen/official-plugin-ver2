@@ -39,8 +39,7 @@ class TT_Teamwork{
         $query = "
             CREATE TABLE {$wpdb->prefix}doitac(
                 id_doitac BIGINT NOT NULL AUTO_INCREMENT,
-                hoten VARCHAR(100) NOT NULL,
-                tendonvi VARCHAR(100) NOT NULL,
+                hoten_tendonvi VARCHAR(100) NOT NULL,
                 loai VARCHAR(50) NOT NULL,
                 mota TEXT NULL,
                 display_status VARCHAR(20) NOT NULL,
@@ -153,8 +152,7 @@ class TT_Teamwork{
         //Dữ liệu cho bảng đối tác
         $wpdb->insert( $wpdb->prefix . 'doitac', array(
             'id_doitac'          => 1,
-            'hoten'              => 'Nguyễn Văn An',
-            'tendonvi'           => '',
+            'hoten_tendonvi'     => 'Nguyễn Văn An',
             'loai'               => 'cá nhân', //doanh nghiệp
             'mota'               => '',
             'display_status'     => 'show', //hidden   
@@ -162,16 +160,14 @@ class TT_Teamwork{
         
         $wpdb->insert( $wpdb->prefix . 'doitac', array(
             'id_doitac'          => 2,
-            'hoten'              => 'Nguyễn Văn Bùi',
-            'tendonvi'           => '',
+            'hoten_tendonvi'     => 'Nguyễn Văn Bùi',
             'loai'               => 'cá nhân', //doanh nghiệp
             'mota'               => '',
             'display_status'     => 'show', //hidden   
         ));
         $wpdb->insert( $wpdb->prefix . 'doitac', array(
             'id_doitac'          => 3,
-            'hoten'              => '',
-            'tendonvi'           => 'Công ty phần mềm OTVINA',
+            'hoten_tendonvi'     => 'Công ty phần mềm OTVINA',
             'loai'               => 'doanh nghiệp', //doanh nghiệp
             'mota'               => '',
             'display_status'     => 'show', //hidden   
@@ -179,8 +175,7 @@ class TT_Teamwork{
         
         $wpdb->insert( $wpdb->prefix . 'doitac', array(
             'id_doitac'          => 4,
-            'hoten'              => '',
-            'tendonvi'           => 'Công ty nội thất nhựa Incomtech',
+            'hoten_tendonvi'     => 'Công ty nội thất nhựa Incomtech',
             'loai'               => 'doanh nghiệp', //doanh nghiệp
             'mota'               => '',
             'display_status'     => 'show', //hidden   
@@ -188,8 +183,7 @@ class TT_Teamwork{
         
         $wpdb->insert( $wpdb->prefix . 'doitac', array(
             'id_doitac'          => 5,
-            'hoten'              => '',
-            'tendonvi'           => 'Công ty bất động sản nhadatphongthuy.vn',
+            'hoten_tendonvi'     => 'Công ty bất động sản nhadatphongthuy.vn',
             'loai'               => 'doanh nghiệp', //doanh nghiệp
             'mota'               => '',
             'display_status'     => 'show', //hidden   
@@ -322,53 +316,63 @@ class TT_Teamwork{
         //du lieu mau cho bang _kynang
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 1,
-            'tenkynang'         => 'HTML',
-            'chuthich'          => 'Thành thạo HTML',
+            'tenkynang'         => 'HTML,CSS',
+            'mota'              => '',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 2,
-            'tenkynang'         => 'CSS',
-            'chuthich'          => 'Thành thạo CSS',
+            'tenkynang'         => 'Design',
+            'mota'              => '',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 3,
             'tenkynang'         => 'Javascript, jQuery',
-            'chuthich'          => 'Thành thạo Javascript, jQuery',
+            'mota'              => '',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 4,
             'tenkynang'         => 'PHP, MySQL',
-            'chuthich'          => 'Thành thạo ngôn ngữ PHP và hệ quản trị CSDL MySQL',
+            'mota'              => 'Thành thạo ngôn ngữ PHP và hệ quản trị CSDL MySQL',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 5,
             'tenkynang'         => 'Photoshop',
-            'chuthich'          => 'Sử dụng thành thạo Photoshop',
+            'mota'              => 'Sử dụng thành thạo Photoshop',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 6,
             'tenkynang'         => 'Android',
-            'chuthich'          => 'Phát triển Android chuyên nghiệp',
+            'mota'              => 'Phát triển Android chuyên nghiệp',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 7,
             'tenkynang'         => 'iOS',
-            'chuthich'          => 'Phát triển iOS chuyên nghiệp',
+            'mota'              => 'Phát triển iOS chuyên nghiệp',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 8,
             'tenkynang'         => 'PHP Framework CodeIgniter',
-            'chuthich'          => 'Sử dụng thành thạo framework CodeIgniter',
+            'mota'              => 'Sử dụng thành thạo framework CodeIgniter',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 9,
             'tenkynang'         => 'PHP Framework Laravel',
-            'chuthich'          => 'Sử dụng thành thạo framework Laravel',
+            'mota'              => 'Sử dụng thành thạo framework Laravel',
+            'display_status'    => 'show'
         ));
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
             'id_kynang'         => 10,
             'tenkynang'         => 'WordPress',
-            'chuthich'          => 'Phát triển theme và plugin WordPress chuyên nghiệp',
+            'mota'              => 'Phát triển theme và plugin WordPress chuyên nghiệp',
+            'display_status'    => 'show'
         ));
         //du lieu mau cho bang: _chitiet_duan
         $wpdb->insert( $wpdb->prefix . 'chitiet_duan', array(

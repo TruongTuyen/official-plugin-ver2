@@ -38,10 +38,6 @@ class TT_Nhanvien extends WP_List_Table{
         return '<em>' . $item['gioitinh'] . '</em>';
     }
     
-    function column_cac_duan( $item ){
-        return '<em>' . $item['cac_duan'] . '</em>';
-    }
-    
     function column_cac_kynang( $item ){
         return '<em>' . $item['cac_kynang'] . '</em>';
     }
@@ -70,8 +66,7 @@ class TT_Nhanvien extends WP_List_Table{
             'hoten'             => __( 'Họ tên', 'simple_plugin' ),
             'namsinh'           => __( 'Năm sinh', 'simple_plugin' ),
             'gioitinh'          => __( 'Giới tính', 'simple_plugin' ),
-            'quequan'           => __( 'Quê quán', 'simple_plugin' ),    
-            'cac_duan'          => __( 'Dự án', 'simple_plugin' ),
+            'quequan'           => __( 'Quê quán', 'simple_plugin' ), 
             'cac_kynang'        => __( 'Kỹ năng', 'simple_plugin' ),
         );
         return $columns;
@@ -98,24 +93,22 @@ class TT_Nhanvien extends WP_List_Table{
     function process_bulk_action(){
         global $wpdb;
         $table_nhanvien       = $wpdb->prefix . 'nhanvien'; 
-        $table_chitiet_duan   = $wpdb->prefix . 'chitiet_duan';
         $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
 
         if ( 'delete' === $this->current_action() && $_REQUEST['page'] == "ds_nhanvien" ) {
             $ids         = isset( $_REQUEST['ids'] ) ? $_REQUEST['ids'] : array();
             $id_nhanvien = isset( $_REQUEST['id_nhanvien'] ) ? $_REQUEST['id_nhanvien'] : '';
             
+            /**
             if( is_array($ids) && !empty( $ids ) ) {
                 $ids = implode(',', $ids);
                 $wpdb->query( "DELETE FROM {$table_nhanvien} WHERE id_nhanvien IN( {$ids} )" );
-                $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_nhanvien IN( {$ids} )" );
                 $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien IN( {$ids} )" );
             }elseif( $id_nhanvien != '' ){
                 $wpdb->query( "DELETE FROM {$table_nhanvien} WHERE id_nhanvien = {$id_nhanvien}" );
-                $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_nhanvien = {$id_nhanvien}" );
                 $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$id_nhanvien}" );
             } 
-            
+            **/
             
         }
     }
@@ -128,28 +121,17 @@ class TT_Nhanvien extends WP_List_Table{
         $sortable = $this->get_sortable_columns();
         $this->_column_headers = array( $columns, $hidden, $sortable );
         $this->process_bulk_action();
-        $total_items = $wpdb->get_var( "SELECT COUNT(id_nhanvien) FROM {$table_name}" );
+        $total_items = $wpdb->get_var( "SELECT COUNT(id_nhanvien) FROM {$table_name} WHERE display_status = 'show'" );
 
-        //$paged   = isset( $_REQUEST['paged'] ) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
+        
         $paged   = isset( $_REQUEST['paged'] ) ? $_REQUEST['paged'] : 1;
         $offset  = ( $paged - 1 ) * $per_page; //tinh toan so ban ghi se bi bo qua
         
         $orderby = (isset( $_REQUEST['orderby'] ) && in_array($_REQUEST['orderby'], array_keys( $this->get_sortable_columns())) ) ? $_REQUEST['orderby'] : 'id_nhanvien';
         $order   = (isset( $_REQUEST['order'] ) && in_array($_REQUEST['order'], array( 'asc', 'desc' ))) ? $_REQUEST['order'] : 'asc';
  
-        //$this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name ORDER BY $orderby $order LIMIT %d OFFSET %d", $per_page, $paged ), ARRAY_A );
-        $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name ORDER BY $orderby $order LIMIT %d, %d", $offset, $per_page ), ARRAY_A );
-        //$this->items['cac_kynang'] = self::tt_get_selected_detail_kynang();
         
-        if( is_array( $this->items ) && !empty( $this->items ) ){
-            foreach( $this->items as $key=>$value ){
-                $text_kynang = $this->tt_get_selected_detail_kynang( $value['id_nhanvien'] );
-                $text_duan   = $this->tt_get_selected_detail_duan( $value['id_nhanvien'] );
-                
-                $this->items[$key]['cac_kynang'] = $text_kynang;
-                $this->items[$key]['cac_duan']   = $text_duan;
-            }
-        }
+        $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d, %d", 'show', $offset, $per_page ), ARRAY_A );
         
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
@@ -158,70 +140,6 @@ class TT_Nhanvien extends WP_List_Table{
         ));
     }
     
-    public static function tt_get_selected_detail_duan( $id_nhanvien ){
-        global $wpdb;
-        $detail_duan_table = $wpdb->prefix . 'chitiet_duan';
-        $duan_table        = $wpdb->prefix . 'duan'; 
-        $ids = array();
-        $all_joined_project = $wpdb->get_results( $wpdb->prepare( "SELECT id_duan FROM {$detail_duan_table} WHERE id_nhanvien = %d", $id_nhanvien ), ARRAY_A );
-        
-        if( is_array( $all_joined_project) && !empty( $all_joined_project ) ){
-            foreach( $all_joined_project as $key => $value ){
-                $ids[] = $value['id_duan'];
-            }
-        }
-        
-        if( !empty( $ids ) ){
-           $ids = implode( ",", $ids ); 
-           $duan_names = $wpdb->get_results( "SELECT id_duan,tenduan FROM {$duan_table} WHERE id_duan IN({$ids})", ARRAY_A );
-           
-           if( !empty( $duan_names ) && is_array( $duan_names ) ){
-                $array_html_links = array();
-                foreach( $duan_names as $key=>$value ){
-                    $array_html_links[] = sprintf( '<a href="?page=new_duan&id_duan=%d">%s</a>', $value['id_duan'], $value['tenduan'] );
-                }
-           }
-        }
-       
-        if( is_array( $array_html_links ) && !empty( $array_html_links ) ){
-            return implode( ", ", $array_html_links );
-        }else{
-            return __( 'Không có dữ liệu' );
-        }
-        
-    }
-    
-    public static function tt_get_selected_detail_kynang( $id_nhanvien ){
-       global $wpdb;
-       $detai_kynang_table = $wpdb->prefix . 'chitiet_kynang';
-       $kynang_table       = $wpdb->prefix . 'kynang';
-       $ids = array();
-       $all_skill = $wpdb->get_results( $wpdb->prepare( "SELECT id_kynang FROM {$detai_kynang_table} WHERE id_nhanvien = %d", $id_nhanvien ), ARRAY_A ); 
-       
-       if( is_array( $all_skill ) && !empty( $all_skill ) ){
-            foreach( $all_skill as $key=>$value ){
-                $ids[] = $value['id_kynang'];
-            }
-       } 
-       
-       if( !empty( $ids ) ){
-           $ids = implode( ",", $ids ); 
-           $skill_names = $wpdb->get_results( "SELECT id_kynang,tenkynang FROM {$kynang_table} WHERE id_kynang IN({$ids})", ARRAY_A );
-           
-           if( !empty( $skill_names ) && is_array( $skill_names ) ){
-                $array_html_links = array();
-                foreach( $skill_names as $key=>$value ){
-                    $array_html_links[] = sprintf( '<a href="?page=new_kynang&id_kynang=%d">%s</a>', $value['id_kynang'], $value['tenkynang'] );
-                }
-           }
-       }
-       
-       if( is_array( $array_html_links ) && !empty( $array_html_links ) ){
-            return implode( ", ", $array_html_links );
-       }else{
-            return __( 'Không có dữ liệu' );
-       }
-    }
     
     public function tt_page_nhanvien_callback(){
         global $wpdb;
@@ -233,7 +151,7 @@ class TT_Nhanvien extends WP_List_Table{
         }
 ?>
     <div class="wrap">
-        <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
+        <div class="icon32 icon32-posts-post" id="icon-edit"><br/></div>
         <h2><?php _e( 'Danh sách nhân viên', 'simple_plugin' )?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=new_nhanvien');?>"><?php _e( 'Thêm mới nhân viên', 'simple_plugin' )?></a></h2>
         <?php echo $message; ?>
         <form id="nhanvien-table" method="GET">
@@ -244,10 +162,43 @@ class TT_Nhanvien extends WP_List_Table{
 <?php     
     }//End function tt_nhanvien_page_callback
     
+    public static function tt_get_all_kynang_by_id_nhanvien( $id_nhanvien ){
+        global $wpdb;
+        $table_kynang = $wpdb->prefix . 'kynang';
+        $table_detail_kynang = $wpdb->prefix . 'chitiet_kynang';
+        
+        $all_kynang_by_id_nhanvien = $wpdb->get_results( $wpdb->prepare( "SELECT id_kynang, id_nhanvien FROM {$table_detail_kynang} WHERE id_nhanvien = %d", $id_nhanvien ), ARRAY_A );
+        $all_deleted_kynang        = $wpdb->get_results( "SELECT id_kynang FROM {$table_kynang} WHERE display_status = 'hidden'", ARRAY_A );
+        $all_deleted_kynang_fomated = array();
+        
+        foreach( $all_deleted_kynang as $key=>$value ){
+            $all_deleted_kynang_fomated[] = $value['id_kynang'];
+        }
+        
+        
+        foreach( $all_deleted_kynang_fomated as $k=>$v ){
+            foreach( $all_kynang_by_id_nhanvien as $key=>$value ){
+                if( $value['id_kynang'] == $v ){
+                    unset( $all_kynang_by_id_nhanvien[$key] );
+                    $wpdb->delete( $table_detail_kynang, array( 'id_kynang' => $v ), array( '%d' ) );
+                }
+            }
+        }
+        
+        $return = array();
+        foreach( $all_kynang_by_id_nhanvien as $k=>$v ){
+            $return[] = $v['id_kynang'];
+        }
+        
+        return $return;
+    }
     
     public function tt_new_nhanvien_callback(){
         global $wpdb;
         $table_name = $wpdb->prefix . 'nhanvien'; 
+        $table_kynang = $wpdb->prefix . 'kynang';
+        $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
+        
         $message = '';
         $notice = '';
         
@@ -257,129 +208,74 @@ class TT_Nhanvien extends WP_List_Table{
             'namsinh'           => '',
             'gioitinh'          => '',
             'quequan'           => '',
-            'avatar'            => ''
+            'avatar'            => '',
+            'display_status'    => 'show'
         );
-        if ( wp_verify_nonce( $_REQUEST['nonce'], basename(__FILE__)) ) {
-            $item = shortcode_atts( $default, $_REQUEST );
-            $ids_duan   = $_REQUEST['cac_duan'];
-            $ids_kynang = $_REQUEST['cac_kynang'];
+        
+        if( wp_verify_nonce( $_REQUEST['nonce'], basename( __FILE__) )){
+            $item = shortcode_atts($default, $_REQUEST);
             $item_valid = self::tt_validate_data_nhanvien( $item );
-            if ( $item_valid === true ) {
-                if ( $item['id_nhanvien'] == 0 ) {
+            
+            $seleted_id_kynang = $_POST['cac_kynang'];
+            
+            if( $item_valid == true ){
+                if( $item['id_nhanvien'] == 0 ){ //Thêm mới dl
                     $result = $wpdb->insert( $table_name, $item );
                     $item['id_nhanvien'] = $wpdb->insert_id;
                     
-                    if( !empty( $ids_duan ) ){
-                        foreach( $ids_duan as $key=>$value ){
-                           $result = $wpdb->insert( $wpdb->prefix . 'chitiet_duan', array(
-                                'id'                => 0,
-                            	'id_duan'           => $value,
-                            	'id_nhanvien'       => $item['id_nhanvien'],
-                            ));
+                    if( $result ){
+                        //Thêm dữ liệu vào bảng chitiet_kynang
+                        if( is_array( $seleted_id_kynang ) && !empty( $seleted_id_kynang ) ){
+                            foreach( $seleted_id_kynang as $key=>$value ){
+                                $data_insert = array(
+                                    'id_kynang'     => $value,
+                                    'id_nhanvien'   => $item['id_nhanvien']
+                                );
+                                $wpdb->insert( $table_chitiet_kynang, $data_insert );
+                            }
                         }
+                        $message = __( "Đã thêm dữ liệu thành công", "simple_plugin" );
+                    }else{
+                        $notice  = __( "Xảy ra lỗi trong quá trình thêm dữ liệu, xin vui lòng thử lại", "simple_plugin" );
                     }
                     
-                    if( !empty( $ids_kynang ) ){
-                        foreach( $ids_kynang as $key=>$value ){
-                            $result = $wpdb->insert( $wpdb->prefix . 'chitiet_kynang', array(
-                                'id'                => 0,
-                            	'id_kynang'         => $value,
-                            	'id_nhanvien'       => $item['id_nhanvien'],
-                            ));
+                }else{ //Cập nhật dl
+                    $result = $wpdb->update( $table_name, $item, array( "id_nhanvien" => $item['id_nhanvien']) );
+                    if( $result ){
+                        if( is_array( $seleted_id_kynang ) && !empty( $seleted_id_kynang ) ){
+                            foreach( $seleted_id_kynang as $key=>$value ){
+                                $wpdb->delete( $table_chitiet_kynang, array( 'id_nhanvien' => $item['id_nhanvien'] ), array( '%d' ) );
+                                $data_insert = array(
+                                    'id_kynang'     => $value,
+                                    'id_nhanvien'   => $item['id_nhanvien']
+                                );
+                                $wpdb->insert( $table_chitiet_kynang, $data_insert );
+                            }
                         }
+                        $message = __( "Cập nhật dữ liệu thành công", "simple_plugin" );
+                    }else{
+                        $notice  = __( "Xảy ra lỗi, vui lòng thử lại", "simple_plugin" ); 
                     }
-                    
-                    if ( $result ) {
-                        $message = __( 'Thêm dữ liệu thành công', 'simple_plugin' );
-                    } else {
-                        $notice = __( 'Xảy ra lỗi trong quá trình thêm dữ liệu', 'simple_plugin' );
-                    }
-                    
-                    
-                } else {
-                    $table_chitiet_duan   = $wpdb->prefix . 'chitiet_duan';
-                    $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
-                    
-                    $result = $wpdb->update( $table_name, $item, array( 'id_nhanvien' => $item['id_nhanvien']) );
-                    $id_nhanvien  = $item['id_nhanvien'];  
-                    
-                    //Xoa cac dong du lieu da ton tai dua vao id_nhanvien sau do insert lai du lieu moi 
-                    $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_nhanvien = {$id_nhanvien}" );
-                    $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$id_nhanvien}" );
-                    
-                    if( !empty( $ids_duan ) ){
-                        foreach( $ids_duan as $key=>$value ){
-                            $result = $wpdb->insert( $wpdb->prefix . 'chitiet_duan', array(
-                                'id'                => 0,
-                            	'id_duan'           => $value,
-                            	'id_nhanvien'       => $item['id_nhanvien'],
-                            ));
-                        }
-                    }
-                    
-                    if( !empty( $ids_kynang ) ){
-                        foreach( $ids_kynang as $key=>$value ){
-                            $result = $wpdb->insert( $wpdb->prefix . 'chitiet_kynang', array(
-                                'id'                => 0,
-                            	'id_kynang'         => $value,
-                            	'id_nhanvien'       => $item['id_nhanvien'],
-                            ));
-                        }
-                    }
-                    
-                    if ( $result ) {
-                        $message = __( 'Cập nhật dữ liêu thành công', 'simple_plugin' );
-                    } else {
-                        $notice = __( 'Xảy ra lỗi trong quá trình cập nhật dữ liệu', 'simple_plugin' );
-                    }
-                    
-                    
                 }
-            } else {
+            }else{
                 $notice = $item_valid;
             }
-        }
-        else {
+            
+        }else{
             $item = $default;
-            if ( isset( $_REQUEST['id_nhanvien'] ) ) {
-                $item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id_nhanvien = %d", $_REQUEST['id_nhanvien']), ARRAY_A );
-                if ( !$item ) {
-                    $item = $default;
-                    $notice = __( 'Không tìm thấy dữ liệu', 'simple_plugin' );
+            if( isset( $_REQUEST['id_nhanvien'] )){
+                $item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id_nhanvien = %d AND display_status = %s", $_REQUEST['id_nhanvien'], 'show' ), ARRAY_A );
+                if( empty( $item ) ){
+                    $item   = $default;
+                    $notice = __( "Không tìm thấy dữ liệu ", "simple_plugin" );
                 }
             }
         }
         
-        /** GET Duan Info, KyNang Info **/
-        $table_duan       = $wpdb->prefix . 'duan';
-        $table_kynang     = $wpdb->prefix . 'kynang';
-        $table_chitiet_duan   = $wpdb->prefix . 'chitiet_duan';
-        $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
         
+        $list_kynang = $wpdb->get_results( $wpdb->prepare( "SELECT id_kynang, tenkynang FROM {$table_kynang} WHERE display_status = %s", 'show' ), ARRAY_A );
+        $selected_kynang = self::tt_get_all_kynang_by_id_nhanvien( $item['id_nhanvien'] );
         
-        $item['cac_duan']   = $wpdb->get_results( "SELECT id_duan, tenduan FROM {$table_duan}", ARRAY_A );
-        $item['cac_kynang'] = $wpdb->get_results( "SELECT id_kynang, tenkynang FROM {$table_kynang}", ARRAY_A );;
-        
-        if( $item['id_nhanvien'] != 0 ){
-            $id_nhanvien = $item['id_nhanvien'];
-            $item['selected_duan']   = $wpdb->get_results( "SELECT id_duan FROM {$table_chitiet_duan} WHERE id_nhanvien={$id_nhanvien}", ARRAY_A );
-            $item['selected_kynang'] = $wpdb->get_results( "SELECT id_kynang FROM {$table_chitiet_kynang} WHERE id_nhanvien={$id_nhanvien}", ARRAY_A );
-            
-            if( is_array( $item['selected_duan'] ) && !empty( $item['selected_duan'] ) ){
-                $selected_duan = array();
-                foreach( $item['selected_duan'] as $key=>$value ){
-                    $selected_duan[] = $value['id_duan'];
-                }
-            }
-            
-            if( is_array( $item['selected_kynang'] ) && !empty( $item['selected_kynang'] ) ){
-                $selected_kynang = array();
-                foreach( $item['selected_kynang'] as $key=>$value ){
-                    $selected_kynang[] = $value['id_kynang'];
-                }
-            }
-            
-        }
         /** END GET Duan Info, KyNang Info  **/
         ?>
         <div class="wrap">
@@ -401,6 +297,7 @@ class TT_Nhanvien extends WP_List_Table{
                                 <tbody>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
+                                        
                                             <label for="hoten"><?php _e( 'Họ tên', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
@@ -439,25 +336,14 @@ class TT_Nhanvien extends WP_List_Table{
                                             <input id="quequan" name="quequan" type="text" style="width: 95%" value="<?php if( !empty( $item['quequan'] ) ) echo esc_attr( $item['quequan'] );?>" class="code"  required />
                                         </td>
                                     </tr>
-                                    <tr class="form-field">
-                                        <th valign="top" scope="row">
-                                            <label for="cac_duan"><?php _e( 'Các dự án', 'simple_plugin' ); ?></label>
-                                        </th>
-                                        <td>
-                                            <select id="chon_cac_duan" name="cac_duan[]" data-placeholder="Chọn dự án" class="chosen-select" multiple style="width:95%;" tabindex="4">
-                                                <?php foreach( $item['cac_duan'] as $key=>$value ){ ?>
-                                                    <option value="<?php echo $value['id_duan']; ?>" <?php if( isset( $selected_duan ) && !empty( $selected_duan ) && in_array( $value['id_duan'], $selected_duan ) ){ echo 'selected="selected"'; } ?>><?php echo $value['tenduan']; ?></option>
-                                                <?php } ?>
-                                            </select>
-                                        </td>
-                                    </tr> 
+                                    
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
                                             <label for="cac_kynang"><?php _e( 'Các kỹ năng', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
                                             <select id="chon_cac_kynang" name="cac_kynang[]" class="code" data-placeholder="Chọn kỹ năng" multiple style="width:95%;" tabindex="4">
-                                                <?php foreach( $item['cac_kynang'] as $key=>$value ){ ?>    
+                                                <?php foreach( $list_kynang as $key=>$value ){ ?>    
                                                     <option value="<?php  echo $value['id_kynang']; ?>" <?php if( isset( $selected_kynang ) && !empty( $selected_kynang ) && in_array( $value['id_kynang'], $selected_kynang ) ){ echo 'selected="selected"'; } ?> ><?php echo $value['tenkynang']; ?></option>
                                                 <?php } ?>
                                             </select>

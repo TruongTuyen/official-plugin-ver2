@@ -140,3 +140,7 @@ table.form-table-hangmuc tr th label{
 .hangmuc_congviec_items_wrapper:first-child{
     margin-top:5px;
 }
+
+.not_show{
+    display:none;
+}

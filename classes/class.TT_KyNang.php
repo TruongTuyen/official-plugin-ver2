@@ -18,8 +18,8 @@ class TT_KyNang extends WP_List_Table{
         return '<em>' . $item['id_kynang'] . '</em>';
     }
     
-    public function colum_chuthich( $item ){
-        return '<em>' . $item['chuthich'] . '</em>';
+    public function colum_mota( $item ){
+        return '<em>' . $item['mota'] . '</em>';
     }
     
     public function column_tenkynang( $item ){
@@ -39,7 +39,7 @@ class TT_KyNang extends WP_List_Table{
             'cb'        => '<input type="checkbox" />',
             'id_kynang' => __( "ID", "simple_plugin" ),
             'tenkynang' => __( "Tên Kỹ Năng", "simple_plugin" ),
-            'chuthich'  => __( "Chú Thích", "simple_plugin" )
+            'mota'      => __( "Mô tả", "simple_plugin" )
         );
     }
     
@@ -47,7 +47,7 @@ class TT_KyNang extends WP_List_Table{
         return array(
             'id_kynang' => array( 'id_kynang', true ),
             'tenkynang' => array( 'tenkynang', false ),
-            'chuthich'  => array( 'chuthich', false )
+            'mota'      => array( 'mota', false )
             
         );
     }
@@ -61,23 +61,19 @@ class TT_KyNang extends WP_List_Table{
     public function process_bulk_action(){
         global $wpdb;
         $table_kynang = $wpdb->prefix . 'kynang';
-        $table_chitet_kynang = $wpdb->prefix . 'chitiet_kynang';
+        
         
         if( $this->current_action() === 'delete' && $_REQUEST['page'] == 'ds_ky_nang' ){
             $ids = isset( $_REQUEST['id_kynang'] ) ? $_REQUEST['id_kynang'] : array();
-            $id_kynang = isset( $_REQUEST['id_kynang'] ) ? $_REQUEST['id_kynang'] : '';
             
             if( is_array( $ids ) && !empty( $ids ) ){
-                $ids = implode( ',', $ids );
-                $wpdb->query( "DELETE FROM $table_kynang WHERE id_kynang IN($ids)" );
-                $wpdb->query( "DELETE FROM $table_chitet_kynang WHERE id_kynang IN($ids)" );
+                foreach( $ids as $key=>$value ){
+                    $wpdb->update( $table_kynang, array( 'display_status' =>'hidden' ), array( 'id_kynang' => $value ) );
+                }
+                
+            }elseif( !empty( $ids ) && is_numeric( $ids ) ){
+                $wpdb->update( $table_kynang, array( 'display_status'=>'hidden'), array( 'id_kynang' => $ids ) );
             }
-            
-            if( $id_kynang != '' ){
-                $wpdb->query( "DELETE FROM $table_kynang WHERE id_kynang = {$id_kynang}" );
-                $wpdb->query( "DELETE FROM $table_chitet_kynang WHERE id_kynang = {$id_kynang}" );
-            }
-            
             
         }
     }
@@ -95,7 +91,7 @@ class TT_KyNang extends WP_List_Table{
         $this->_column_headers = array( $colums, $hidden, $sortable );
         $this->process_bulk_action();
         
-        $total_items = $wpdb->get_var( "SELECT COUNT(id_kynang) FROM $table_name" );//lấy tổng số bản ghi để có thể tính toán phân trang
+        $total_items = $wpdb->get_var( "SELECT COUNT(id_kynang) FROM $table_name WHERE display_status='show'" );//lấy tổng số bản ghi để có thể tính toán phân trang
         
         //Tính toán các tham số cần thiết
         $paged   = isset( $_REQUEST['paged'] ) ? max( 0, intval( $_REQUEST['paged']) - 1 ) : 0;
@@ -104,7 +100,7 @@ class TT_KyNang extends WP_List_Table{
         $order   = (isset($_REQUEST['order']) && in_array($_REQUEST['order'], array('asc', 'desc'))) ? $_REQUEST['order'] : 'asc';
     
         $this->items = $wpdb->get_results( $wpdb->prepare(
-            "SELECT * FROM $table_name ORDER BY $orderby $order LIMIT %d OFFSET %d", $per_page, $offset
+            "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d OFFSET %d", 'show', $per_page, $offset
         ), ARRAY_A );
         
         $this->set_pagination_args(
@@ -152,9 +148,10 @@ class TT_KyNang extends WP_List_Table{
         $notice  = '';
         
         $default = array(
-            'id_kynang' => 0,
-            'tenkynang' => '',
-            'chuthich'  => ''
+            'id_kynang'      => 0,
+            'tenkynang'      => '',
+            'mota'           => '',
+            'display_status' => 'show'
         );
         
         if( wp_verify_nonce( $_REQUEST['nonce'], basename( __FILE__) )){
@@ -187,7 +184,7 @@ class TT_KyNang extends WP_List_Table{
         }else{
             $item = $default;
             if( isset( $_REQUEST['id_kynang'] )){
-                $item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id_kynang = %d", $_REQUEST['id_kynang'] ), ARRAY_A );
+                $item = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table_name WHERE id_kynang = %d AND display_status = %s", $_REQUEST['id_kynang'], 'show' ), ARRAY_A );
                 if( empty( $item ) ){
                     $item   = $default;
                     $notice = __( "Không tìm thấy dữ liệu ", "simple_plugin" );
@@ -226,10 +223,10 @@ class TT_KyNang extends WP_List_Table{
                                     </tr>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="chuthich"><?php _e( "Chú thích", "simple_plugin" ); ?></label>
+                                            <label for="chuthich"><?php _e( "Mô tả", "simple_plugin" ); ?></label>
                                         </th>
                                         <td>
-                                            <textarea name="chuthich" id="chuthich" style="width:95%;padding:0;"><?php if( !empty( $item['chuthich'] ) ){ echo trim( esc_attr( $item['chuthich'] ) ); } ?></textarea>
+                                            <textarea name="mota" id="chuthich" style="width:95%;padding:0;"><?php if( !empty( $item['mota'] ) ){ echo trim( esc_attr( $item['mota'] ) ); } ?></textarea>
                                         </td>
                                     </tr>
                                 </tbody>
