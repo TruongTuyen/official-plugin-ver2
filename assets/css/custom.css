@@ -72,22 +72,26 @@
     visibility: inherit;
 } 
 
-.accordionButton {
+.accordionButton,
+.accordionButton2 {
     width:95%;
     float:left;
     background:#80C347;
     border-bottom: 1px solid #FFFFFF;
     cursor: pointer;
-    padding:3px 0px;}
-.accordionButton span {
+    padding:5px 0px;}
+.accordionButton span,
+.accordionButton2 span {
     color:#FFFFFF;
     padding-left:5px;
     font-weight:bold;}
-.accordionContent {
+.accordionContent,
+.accordionContent2 {
     width:95%;
     float:left;
     background:#FFFFFF;}
-.accordionContent p {
+.accordionContent p,
+.accordionContent2 p {
     color:#333333;
     font-size:14px;
     padding-left:8px;}
@@ -113,3 +117,26 @@
     float: none;
     clear: both;
 }    
+
+.hangmuc_them_congviec{
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: -2px;
+}
+
+table.form-table-hangmuc tr th label{
+    margin-left: 20px;
+}
+
+.hangmuc_items_wrapper:last-child{
+    margin-bottom:20px;
+}
+
+.hangmuc_congviec_items_wrapper:first-child{
+    margin-top:5px;
+}

@@ -12,6 +12,11 @@ class TT_Duan extends WP_List_Table{
         
         
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
+        add_action( 'wp_ajax_tt_ajax_load_form_them_congviec_in_hangmuc', array( $this, 'tt_ajax_load_form_them_congviec_in_hangmuc_callback' ) );
+        add_action( 'wp_ajax_nopriv_tt_ajax_load_form_them_congviec_in_hangmuc', array( $this, 'tt_ajax_load_form_them_congviec_in_hangmuc_callback' ) );
+        
+        add_action( 'wp_ajax_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
+        add_action( 'wp_ajax_nopriv_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
     }
     
     function column_default( $item, $column_name ){
@@ -127,8 +132,7 @@ class TT_Duan extends WP_List_Table{
     }
     
     public function enqueue_script(){
-        wp_enqueue_script( 'jquery_ui', TT_DIR_URL . '/asset/js/jquery-ui.min.js', array('jquery') );
-        wp_enqueue_script( 'jquery_ui', TT_DIR_URL . '/asset/js/function.js', array('jquery') );
+        wp_register_script( 'jquery_arcodion', TT_DIR_URL . 'assets/js/js_arcodion.js', array('jquery') );
     }
     
     public function tt_duan_page_callback(){
@@ -154,6 +158,15 @@ class TT_Duan extends WP_List_Table{
     
     
     public function tt_new_duan_page_callback(){
+        if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
+            echo "<pre>";
+            print_r( $_POST );
+            echo "</pre>";
+        }
+        
+        
+        
+        
         global $wpdb;
         $table_name = $wpdb->prefix . 'duan'; 
         $message = '';
@@ -305,12 +318,12 @@ class TT_Duan extends WP_List_Table{
                 </div>
                 
                 <div class="metabox-holder" id="poststuff">
-                    <div id="post-body">
+                    <div id="post-body-add-hangmuc">
                         <div id="post-body-content">
-                            <h2>Hạng mục <a class="add-new-h2" href="#"><?php _e( 'Thêm mới hạng mục', 'simple_plugin' ); ?></a></h2>
+                            <h2>Hạng mục <a class="add-new-h2" href="#" id="them-moi-hangmuc-btn" data-stt="0"><?php _e( 'Thêm mới hạng mục', 'simple_plugin' ); ?></a></h2>
                         </div>
                         <div id="hangmuc_add_new">
-                            <?php include( TT_DIR_PATH . '/templates/new_hangmuc.php' ); ?>
+                            <?php //include( TT_DIR_PATH . '/templates/new_hangmuc.php' ); ?>
                         </div><!-- hangmuc_add_new -->
                         
                         
@@ -355,9 +368,65 @@ class TT_Duan extends WP_List_Table{
         
     }
     
+    public function  tt_ajax_load_form_them_congviec_in_hangmuc_callback(){
+        global $stt_congviec, $stt_hangmuc;
+        $type = 'done';
+        
+        $stt_congviec = $_POST['id_congviec'];
+        $stt_hangmuc  = $_POST['id_hangmuc'];
+        
+        if( !check_ajax_referer( 'tt_ajax_form', 'security' ) ){
+            $type = 'false';
+            $result = array( 
+                'type' => $type,
+                'data' => ''
+            );
+		    die( wp_send_json( $result ) );
+        }
+        
+        ob_start();
+        include( TT_DIR_PATH . '/templates/new_congviec.php' );
+        $data = ob_get_clean();
+        $result = array( 
+            'type' => $type, 
+            'data' => $data 
+        );
+		die( wp_send_json( $result ) );
+        
+    }
+    
+    public function  tt_ajax_load_form_them_hangmuc_callback(){
+        global $so_thutu;
+        $type = 'done';
+        $so_thutu = $_POST['stt'];
+        if( !check_ajax_referer( 'tt_ajax_form', 'security' ) ){
+            $type = 'false';
+            $result = array( 
+                'type' => $type,
+                'data' => ''
+            );
+		    die( wp_send_json( $result ) );
+        }
+        wp_enqueue_script( 'jquery_arcodion' );
+        ob_start();
+        include( TT_DIR_PATH . '/templates/new_hangmuc.php' );
+        $data = ob_get_clean();
+        
+        $result = array( 
+            'type' => $type, 
+            'data' => $data 
+        );
+		die( wp_send_json( $result ) );
+        
+    }
+    
+    
+    
+
+    
     
 }//End class TT_Duan
-
+new TT_Duan();
 /*
  CREATE TABLE Orders
 (

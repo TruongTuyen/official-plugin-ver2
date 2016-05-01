@@ -43,17 +43,17 @@ $(document).ready(function() {
         
         //hangmuc_tgbatdau, hangmuc_tgketthuc
         
-        $("#hangmuc_tgbatdau").datepicker({
+        $(".hangmuc_tgbatdau").datepicker({
             minDate: 0,
             onSelect: function(selected) {
-                $("#hangmuc_tgbatdau").datepicker("option","minDate", selected)
+                $(".hangmuc_tgbatdau").datepicker("option","minDate", selected)
             }
 
         });
-        $("#hangmuc_tgketthuc" ).datepicker({
+        $(".hangmuc_tgketthuc" ).datepicker({
             minDate: 0,
             onSelect: function(selected) {
-                $("#hangmuc_tgketthuc").datepicker("option","minDate", selected)
+                $(".hangmuc_tgketthuc").datepicker("option","minDate", selected)
             }
         });
         
@@ -187,16 +187,23 @@ $(document).ready(function() {
 });   
 **/
 //Chọn % hoan thanh
+/**
 function updateTextInput(val) {
     //document.getElementById('textInput').value=val; 
-    var percent = $("#percent_range_input").val();
-    $("#percent_number").html( percent );
-    $("#input_percent_number").val( percent );
+    
+    //var percent = $(".percent_range_input").val();
+    var percent = $(this).val();
+    
+    
+    $(".percent_number").html( percent );
+    $(".input_percent_number").val( percent ); 
+    
+    
 }
-
+**/
 //accordion cho hạng mục
-$(document).ready(function() {
-    $('.accordionButton').click(function() {
+$(function(){
+    $(document).on('click', '.accordionButton', function(){ //$('.accordionButton').click(function() {
         $('.accordionButton').removeClass('on');
         $('.accordionContent').slideUp('normal');
         $('.plusMinus').text('+');
@@ -213,16 +220,106 @@ $(document).ready(function() {
     });
     $('.accordionContent').hide();
     
-});
-
-
-//Button xóa hạng muc
-$(document).ready(function(){
-   $(".remove_hangmuc_button").on('click', function(e){
+    //02
+    $(document).on('click', '.accordionButton2', function(){
+        $('.accordionButton2').removeClass('on');
+        $('.accordionContent2').slideUp('normal');
+        $('.plusMinus').text('+');
+        if($(this).next().is(':hidden') == true) {
+            $(this).addClass('on');
+            $(this).next().slideDown('normal');
+            $(this).children('.plusMinus').text('-');
+         } 
+     });
+    $('.accordionButton2').mouseover(function() {
+        $(this).addClass('over');
+    }).mouseout(function() {
+        $(this).removeClass('over');
+    });
+    $('.accordionContent2').hide(); 
+    
+    //Button xoa hang muc
+    $(document).on('click', '.remove_hangmuc_button', function(e){
         e.preventDefault();
-        $(this).closest('.hangmuc_items_wrapper').remove();
-   }); 
+        
+        var confirm_box = confirm( "Bạn thực sự muốn xóa." );
+        if( confirm_box ){
+            $(this).closest('.hangmuc_items_wrapper').remove();
+        }else{
+            return false;
+        }
+        
+    }); 
+    
+    //Button xoa cong viec trong hang muc
+    $(document).on('click', '.remove_hangmuc_cong_viec_button', function(e){
+        e.preventDefault();
+        var confirm_box = confirm( "Bạn thực sự muốn xóa." );
+        if( confirm_box ){
+            $(this).closest('.hangmuc_congviec_items_wrapper').remove();
+        }else{
+            return false;
+        }
+        
+    }); 
+    
+    //Load text on keyup
+    //$(".tenhangmuc").keyup(function(){//liveQuery
+    $(document).on('keyup', '.tenhangmuc', function(){
+        current_value = $(this).val();
+        $(this).closest(".accordionContent").siblings().find('.span_ten_hangmuc').text( current_value );
+        
+    }); 
+    $(document).on('keyup', '.hangmuc_tencongviec', function(){
+        current_value = $(this).val();
+        $(this).closest(".accordionContent2").siblings().find('.span_ten_hangmuc_congviec').text( current_value );
+        
+    }); 
+    //load percent 
+    $(document).on('change', '.percent_range_input', function(){
+        var current_percent = $(this).val();
+        $(this).parent().find('.percent_number').html( current_percent );
+        $(this).parent().find('.input_percent_number').val( current_percent );
+    });
+    
+    
+    
 });
+
+//Date picker init
+//Datepicker
+function datepicker_init(){
+    $(".hangmuc_tgbatdau").datepicker({
+        minDate: 0,
+        onSelect: function(selected) {
+            $(".hangmuc_tgbatdau").datepicker("option","minDate", selected)
+        }
+
+    });
+    $(".hangmuc_tgketthuc" ).datepicker({
+        minDate: 0,
+        onSelect: function(selected) {
+            $(".hangmuc_tgketthuc").datepicker("option","minDate", selected)
+        }
+    });
+}
+
+function datepicker_init_cv(){
+    //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
+    $(".hangmuc_congviec_tgbatdau").datepicker({
+        minDate: 0,
+        onSelect: function(selected) {
+            $(".hangmuc_congviec_tgbatdau").datepicker("option","minDate", selected)
+        }
+
+    });
+    $(".hangmuc_congviec_tgketthuc" ).datepicker({
+        minDate: 0,
+        onSelect: function(selected) {
+            $(".hangmuc_congviec_tgketthuc").datepicker("option","minDate", selected)
+        }
+    });
+}
 
 //disable nhan vien duoc chon lam quan ly du an
 $(document).ready( function(){
@@ -243,6 +340,7 @@ $(document).ready( function(){
     
 });
 
+/**
 //Lấy ra checkbox nhân viên cho từng công việc trong từng hang mục với các thành viên lấy từ danh sách các thành viên tham gia dự án.
 $(document).ready( function(){
    $("#nhanvien_thamgia_duan input[type=\"checkbox\"]").click(function(){
@@ -270,20 +368,63 @@ $(document).ready( function(){
         
    });
 });
-
+**/
 //tenhangmuc on keyup
 $(document).ready(function(){
-   $(".tenhangmuc").keyup(function(){
+   $(".tenhangmuc").keyup(function(){//liveQuery
         current_value = $(this).val();
         $(this).closest(".accordionContent").siblings().find('.span_ten_hangmuc').text( current_value );
         
    }); 
 });
 
-//Lấy ra checkbox nhân viên cho từng công việc trong từng hang mục với các thành viên lấy từ danh sách các thành viên tham gia dự án.
-$(document).ready(function(){
-    $('#load_nhanvien').click(function(e) {
-        
-    }); 
+//Load các form cong viec trong hang muc khi click
+$(document).on('click','#button_hangmuc_them_congviec',function(e){
+    e.preventDefault();
     
+    var stt_hangmuc  = $(this).data('stt_hangmuc');
+    var stt_congviec = $(this).data('stt_cv');
+    var current_ob   = $(this);
+    
+    var data = {
+        action      : 'tt_ajax_load_form_them_congviec_in_hangmuc',
+        security    : tt_ajax_load_form.security,
+        id_hangmuc  : stt_hangmuc,
+        id_congviec : stt_congviec
+        //productdata : productdata,
+        //page        : page
+    }
+    
+    var t = $(this);
+    var content_div = $(this).parent().parent().next().find('#hangmuc_congviec_wrapper_all');
+    $.post(ajaxurl, data, function(response){
+       if( response.type == 'done' ){
+            $( content_div ).append(response.data);
+            datepicker_init_cv();
+            current_ob.data('stt_cv', (stt_congviec+1) );
+       }
+    });
+});
+
+
+$(document).ready(function(e){
+    $("#them-moi-hangmuc-btn").on('click', function(e){
+       e.preventDefault();
+       var stt = $(this).data('stt');
+       var current_ob = $(this);
+       var data2 = {
+            action     : 'tt_ajax_load_form_them_hangmuc',
+            security   : tt_ajax_load_form.security,
+            stt        : stt
+       }
+       
+       var content_div = $('#hangmuc_add_new');
+       $.post( ajaxurl, data2, function(result){
+            if( result.type == 'done' ){
+                $( content_div ).append( result.data );
+                datepicker_init();
+                current_ob.data('stt', (stt+1) );
+            }
+       });
+    });
 });

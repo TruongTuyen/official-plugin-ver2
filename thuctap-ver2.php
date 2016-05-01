@@ -26,7 +26,6 @@ class TT_Teamwork{
     public $my_db_version = '2.0';
     
     function __construct(){
-        echo "hang: TT_DIR_PATH: " . TT_DIR_PATH;
         register_activation_hook( __FILE__,  array( $this, 'create_table' ) );//Đăng ký activation_hook thông qua hàm create_table để tạo ra các bảng dữ liệu cần thiết khi kích hoạt plugin
         register_activation_hook( __FILE__,  array( $this, 'dummy_data' ) );//Đăng ký activation_hook thông qua hàm dummy_data để chèn dữ liệu mẫu vào các bảng plugin, tránh các lỗi không có dữ liệu
         register_deactivation_hook( __FILE__, array( $this, 'delete_table' ) );//Đăng ký deactivation_hook để tiến hành xóa các bảng dữ liệu khi ngừng kích hoạt plugin
@@ -625,6 +624,11 @@ function enqueue_script(){
     wp_enqueue_style( 'custom-css', TT_DIR_URL . 'assets/css/custom.css', false, '' );
     
     wp_enqueue_media();
+    
+    wp_localize_script( 'jquery_function', 'tt_ajax_load_form', array(
+        'ajaxurl'  => admin_url( 'admin-ajax.php' ),
+        'security' => wp_create_nonce( 'tt_ajax_form' ),
+	) );
 }
 add_action( 'admin_enqueue_scripts', 'enqueue_script' );
 
