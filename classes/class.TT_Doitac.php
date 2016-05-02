@@ -274,11 +274,9 @@ class TT_Doitac extends WP_List_Table{
                 }else{
                     $selected = '';
                 }
-                if( $value['loai'] == 'cá nhân' ){
-                    printf( '<option value="%d" %s>%s</option>', $value['id_doitac'],$selected, $value['hoten'] );
-                }else{
-                    printf( '<option value="%d" %s >%s</option>', $value['id_doitac'],$selected, $value['tendonvi'] );
-                }
+                
+                printf( '<option value="%d" %s>%s</option>', $value['id_doitac'],$selected, $value['hoten_tendonvi'] );
+                
             }
         }else{
             printf( '<option value="%d">%s</option>', 0, __( "Vui lòng thêm dữ liệu về đối tác trước khi chọn.", "simple_plugin" ) );

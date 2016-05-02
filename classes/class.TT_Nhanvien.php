@@ -99,22 +99,26 @@ class TT_Nhanvien extends WP_List_Table{
             $ids         = isset( $_REQUEST['ids'] ) ? $_REQUEST['ids'] : array();
             $id_nhanvien = isset( $_REQUEST['id_nhanvien'] ) ? $_REQUEST['id_nhanvien'] : '';
             
-            /**
             if( is_array($ids) && !empty( $ids ) ) {
                 $ids = implode(',', $ids);
                 $wpdb->query( "DELETE FROM {$table_nhanvien} WHERE id_nhanvien IN( {$ids} )" );
+                foreach( $ids as $key=>$value ){
+                    $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $value ), array( '%d' ) );
+                }
                 $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien IN( {$ids} )" );
             }elseif( $id_nhanvien != '' ){
-                $wpdb->query( "DELETE FROM {$table_nhanvien} WHERE id_nhanvien = {$id_nhanvien}" );
+                $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $id_nhanvien ), array( '%d' ) );
                 $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$id_nhanvien}" );
             } 
-            **/
+           
             
         }
     }
     function prepare_items(){
         global $wpdb;
         $table_name = $wpdb->prefix . 'nhanvien';
+        $table_kynang = $wpdb->prefix . 'kynang';
+        
         $per_page = 5;
         $columns = $this->get_columns();
         $hidden = array();
@@ -133,6 +137,15 @@ class TT_Nhanvien extends WP_List_Table{
         
         $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d, %d", 'show', $offset, $per_page ), ARRAY_A );
         
+        foreach( $this->items as $k=>$v ){
+            $all_skill_each_staff = self::tt_get_all_kynang_by_id_nhanvien( $v['id_nhanvien'] );
+            $array_name_skill = array();
+            foreach( $all_skill_each_staff as $key=> $value ){
+                $array_name_skill[] = $wpdb->get_var( $wpdb->prepare( "SELECT tenkynang FROM {$table_kynang} WHERE id_kynang = %d AND display_status = %s", $value, 'show' ) );
+            }
+            $this->items[$k]['cac_kynang'] = implode( ', ', $array_name_skill );
+        }
+        
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
             'per_page'    => $per_page, // per page constant defined at top of method
@@ -144,7 +157,9 @@ class TT_Nhanvien extends WP_List_Table{
     public function tt_page_nhanvien_callback(){
         global $wpdb;
         $table = new TT_Nhanvien();
+        
         $table->prepare_items();
+        
         $message = '';
         if ('delete' === $table->current_action()) {
             $message = '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Số bản ghi đã xóa: %d', 'custom_table_example'), count( $_REQUEST['id_duan']) ) . '</p></div>';
@@ -240,18 +255,21 @@ class TT_Nhanvien extends WP_List_Table{
                     }
                     
                 }else{ //Cập nhật dl
-                    $result = $wpdb->update( $table_name, $item, array( "id_nhanvien" => $item['id_nhanvien']) );
-                    if( $result ){
-                        if( is_array( $seleted_id_kynang ) && !empty( $seleted_id_kynang ) ){
-                            foreach( $seleted_id_kynang as $key=>$value ){
-                                $wpdb->delete( $table_chitiet_kynang, array( 'id_nhanvien' => $item['id_nhanvien'] ), array( '%d' ) );
-                                $data_insert = array(
-                                    'id_kynang'     => $value,
-                                    'id_nhanvien'   => $item['id_nhanvien']
-                                );
-                                $wpdb->insert( $table_chitiet_kynang, $data_insert );
-                            }
+                    $id_nhanvien = $item['id_nhanvien'];
+                    //loi xuat hien o day
+                    $result = $wpdb->update( $wpdb->prefix. 'nhanvien', $item, array( 'id_nhanvien' => $id_nhanvien ) );
+                    if( is_array( $seleted_id_kynang ) && !empty( $seleted_id_kynang ) ){
+                        $wpdb->delete( $table_chitiet_kynang, array( 'id_nhanvien' => $id_nhanvien ), array( '%d' ) );
+                        foreach( $seleted_id_kynang as $key=>$value ){
+                            $data_insert = array(
+                                'id_kynang'     => $value,
+                                'id_nhanvien'   => $id_nhanvien
+                            );
+                            $result = $wpdb->insert( $table_chitiet_kynang, $data_insert );
                         }
+                    }
+                    //end loi
+                    if( $result ){
                         $message = __( "Cập nhật dữ liệu thành công", "simple_plugin" );
                     }else{
                         $notice  = __( "Xảy ra lỗi, vui lòng thử lại", "simple_plugin" ); 

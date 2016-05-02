@@ -95,12 +95,12 @@ class TT_Duan extends WP_List_Table{
             $id_duan = isset( $_REQUEST['id_duan'] ) ? $_REQUEST['id_duan'] : '';
             
             if( is_array( $ids ) && !empty( $ids )) {
-                $ids = implode( ',', $ids );
-                $wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan IN( {$ids} )" );
-                $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan IN( {$ids} )" );
+                //$ids = implode( ',', $ids );
+                //$wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan IN( {$ids} )" );
+                //$wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan IN( {$ids} )" );
             }elseif( $id_duan != '' ){
-                $wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan = {$id_duan}" );
-                $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan = {$id_duan}" );
+                //$wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan = {$id_duan}" );
+                //$wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan = {$id_duan}" );
             }  
             
         }
