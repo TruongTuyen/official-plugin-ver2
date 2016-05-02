@@ -158,28 +158,42 @@ class TT_Duan extends WP_List_Table{
     
     
     public function tt_new_duan_page_callback(){
-        if( $_SERVER['REQUEST_METHOD'] == 'POST' ){
-            echo "<pre>";
-            print_r( $_POST );
-            echo "</pre>";
-        }
-        
-        
-        
         
         global $wpdb;
-        $table_name = $wpdb->prefix . 'duan'; 
+        $table_name         = $wpdb->prefix . 'duan'; 
+        $table_hangmuc      = $wpdb->prefix . 'hangmuc';
+        $table_chitiet_duan = $wpdb->prefix . 'chitiet_duan';
+        $table_congviec     = $wpdb->prefix . 'congviec';
+        
         $message = '';
         $notice = '';
     
         $default = array(
             'id_duan'           => 0,
+            'id_doitac'         => '',
             'tenduan'           => '',
-            'thoigianbatdau'    => '',
-            'thoigianketthuc'   => '',
-            'trangthai'         => '',
-            'ghichu'            => ''
+            'ngaybatdau'        => '',
+            'ngayketthuc'       => '',
+            'tinhtrangduan'     => '',
+            'mota'              => '',
+            'display_status'    => 'show'
         );
+        
+        $id_nhanvien_tg_duan = $_POST['id_nhanvien_thamgia'];
+        $hangmuc_duan        = $_POST['hangmuc'];
+        
+        $data_insert_to_hangmuc = array(
+            'id_hangmuc',
+            'id_duan',
+            'ten_hangmuc',
+            'noi_dung',
+            'ngaybatdau',
+            'ngayketthuc',
+            'display_status',
+            'phantram_hoanthanh',
+            'trangthai_hangmuc'
+        );
+        
         if ( wp_verify_nonce( $_REQUEST['nonce'], basename(__FILE__)) ) {
             $item = shortcode_atts( $default, $_REQUEST );
             
@@ -188,6 +202,65 @@ class TT_Duan extends WP_List_Table{
                 if ( $item['id_duan'] == 0 ) {
                     $result = $wpdb->insert( $table_name, $item );
                     $item['id_duan'] = $wpdb->insert_id;
+                    
+                    //Thêm dư liệu vào chi tiet du an
+                    if( !empty( $id_nhanvien_tg_duan ) ){
+                        foreach( $id_nhanvien_tg_duan as $key => $value ){
+                            $data = array(
+                                'id_duan'       => $item['id_duan'],
+                                'id_nhanvien'   => $value
+                            );
+                            $result = $wpdb->insert( $table_chitiet_duan, $data );
+                        }
+                    }
+                    //Thêm dữ liệu vào bảng hạng mục
+                    if( !empty( $hangmuc_duan ) ){
+                        echo "<pre>";
+                        print_r( $hangmuc_duan );
+                        echo "</pre>";
+                        foreach( $hangmuc_duan as $key=>$value ){
+                            $data_insert_to_hangmuc = array(
+                                'id_hangmuc'            => 0,
+                                'id_duan'               => $item['id_duan'],
+                                'ten_hangmuc'           => $value['tenhangmuc'],
+                                'noi_dung'              => $value['noidung_hangmuc'],
+                                'ngaybatdau'            => $value['thoigianbatdau'],
+                                'ngayketthuc'           => $value['thoigianketthuc'],
+                                'display_status'        => 'show',
+                                'phantram_hoanthanh'    => $value['phantram_hoanthanh_hangmuc'],
+                                'trangthai_hangmuc'     => $value['trangthai_hoanthanh']
+                            );
+                            $result = $wpdb->insert( $table_hangmuc, $data_insert_to_hangmuc );
+                            $id_hangmuc = $wpdb->insert_id;
+                            
+                            //Thêm dữ liệu vào bảng công việc
+                            if( isset( $value['congviec'] ) && !empty( $value['congviec'] ) ){
+                                echo "<pre>";
+                                print_r( $value['congviec'] );
+                                echo "</pre>";
+                                foreach( $value['congviec'] as $k=>$v ){
+                                    
+                                    $data_insert_to_congviec = array(
+                                        'id_congviec'       => 0,
+                                        'id_hangmuc'        => $id_hangmuc,
+                                        'ten_congviec'      => $v['tencongviec'],
+                                        'nhanvien_thamgia'  => implode( ',', $v['nhanvien_thamgia'] ),
+                                        'noidung_congviec'  => $v['noidungcongviec'],
+                                        'ngaybatdau'        => $v['tg_batdau'],
+                                        'ngayketthuc'       => $v['tg_ketthuc'],
+                                        'display_status'    => 'show',
+                                        'trangthai_congviec'=> $v['trangthai_hoanthanh']
+                                    );
+                                    $result = $wpdb->insert( $table_congviec, $data_insert_to_congviec );
+                                }
+                            }
+                            
+                            
+                        }
+                    }
+                    
+                    
+                    
                     if ( $result ) {
                         $message = __( 'Thêm dữ liệu thành công', 'simple_plugin' );
                     } else {
@@ -195,6 +268,8 @@ class TT_Duan extends WP_List_Table{
                     }
                 } else {
                     $result = $wpdb->update( $table_name, $item, array( 'id_duan' => $item['id_duan']) );
+                    
+                    
                     if ( $result ) {
                         $message = __( 'Cập nhật dữ liêu thành công', 'simple_plugin' );
                     } else {
@@ -217,7 +292,7 @@ class TT_Duan extends WP_List_Table{
         }
         ?>
         <div class="wrap">
-            <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
+            <div class="icon32 icon32-posts-post" id="icon-edit"><br/></div>
             <h2><?php _e( 'Thêm mới dự án', 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
@@ -243,49 +318,49 @@ class TT_Duan extends WP_List_Table{
                                     </tr>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="doitac"><?php _e( 'Đối tác', 'simple_plugin' ); ?></label>
+                                            <label for="id_doitac"><?php _e( 'Đối tác', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <select name="danhsach_doitac" style="width: 50%;">
-                                                <?php echo TT_Doitac::render_select_option_doitac(); ?>
+                                            <select name="id_doitac" style="width: 50%;">
+                                                <?php echo TT_Doitac::render_select_option_doitac( "show", $item['id_doitac'] ); ?>
                                             </select>
                                         </td>
                                     </tr>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="thoigianbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
+                                            <label for="ngaybatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <input id="thoigianbatdau" name="thoigianbatdau" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ) echo esc_attr( $item['thoigianbatdau'] );?>" class="code"  required />
+                                            <input id="thoigianbatdau" name="ngaybatdau" type="text" style="width: 95%" value="<?php if( !empty( $item['ngaybatdau'] ) ) echo esc_attr( $item['ngaybatdau'] );?>" class="code"  required />
                                         </td>
                                     </tr>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="thoigianketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
+                                            <label for="ngayketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <input id="thoigianketthuc" name="thoigianketthuc" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianketthuc'] ) ) echo esc_attr( $item['thoigianketthuc'] );?>" class="code"  required />
+                                            <input id="thoigianketthuc" name="ngayketthuc" type="text" style="width: 95%" value="<?php if( !empty( $item['ngayketthuc'] ) ) echo esc_attr( $item['ngayketthuc'] );?>" class="code"  required />
                                         </td>
                                     </tr>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="trangthai"><?php _e( 'Trạng thái', 'simple_plugin' ); ?></label>
+                                            <label for="tinhtrangduan"><?php _e( 'Trạng thái', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <select id="trangthai" name="trangthai" class="code">
-                                                <option value="Đã hoàn thành" <?php if( !empty( $item['trangthai']) ){ TT_Teamwork::tt_selected( $item['trangthai'], 'Đã hoàn thành' ); }?> >Đã hoàn thành</option>
-                                                <option value="Đang triển khai" <?php if( empty( $item['trangthai'] ) ){ echo 'selected="selected"'; }else{ TT_Teamwork::tt_selected( $item['trangthai'], 'Đang triển khai' ); } ?> >Đang triển khai</option>
-                                                <option value="Chưa hoàn thành" <?php if( !empty( $item['trangthai']) ){ TT_Teamwork::tt_selected( $item['trangthai'], 'Chưa hoàn thành' ); } ?> >Chưa hoàn thành</option>
-                                                <option value="Đã hủy" <?php if( !empty( $item['trangthai']) ){ TT_Teamwork::tt_selected( $item['trangthai'], 'Đã hủy' ); } ?> >Đã hủy</option>
+                                            <select id="trangthai" name="tinhtrangduan" class="code">
+                                                <option value="Đã hoàn thành" <?php if( !empty( $item['tinhtrangduan']) ){ TT_Teamwork::tt_selected( $item['tinhtrangduan'], 'Đã hoàn thành' ); }?> >Đã hoàn thành</option>
+                                                <option value="Đang triển khai" <?php if( empty( $item['tinhtrangduan'] ) ){ echo 'selected="selected"'; }else{ TT_Teamwork::tt_selected( $item['tinhtrangduan'], 'Đang triển khai' ); } ?> >Đang triển khai</option>
+                                                <option value="Chưa hoàn thành" <?php if( !empty( $item['tinhtrangduan']) ){ TT_Teamwork::tt_selected( $item['tinhtrangduan'], 'Chưa hoàn thành' ); } ?> >Chưa hoàn thành</option>
+                                                <option value="Đã hủy" <?php if( !empty( $item['tinhtrangduan']) ){ TT_Teamwork::tt_selected( $item['tinhtrangduan'], 'Đã hủy' ); } ?> >Đã hủy</option>
                                             </select>
                                         </td>
                                     </tr> 
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
-                                            <label for="ghichu"><?php _e( 'Mô tả', 'simple_plugin' ); ?></label>
+                                            <label for="mota"><?php _e( 'Mô tả', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <textarea id="ghichu" name="ghichu" class="code" style="width: 95%" ><?php if( !empty( $item['ghichu'] ) ) echo esc_attr( $item['ghichu'] );?></textarea>
+                                            <textarea id="ghichu" name="mota" class="code" style="width: 95%" ><?php if( !empty( $item['mota'] ) ) echo esc_attr( $item['mota'] );?></textarea>
                                         </td>
                                     </tr>
                                     <tr>
@@ -294,7 +369,7 @@ class TT_Duan extends WP_List_Table{
                                         </th>
                                         <td>
                                             <select name="id_quanly_duan" id="id_quanly_duan">
-                                                <?php echo TT_Nhanvien::render_select_option_nhanvien( 'show', 3 ); ?>
+                                                <?php echo TT_Nhanvien::render_select_option_nhanvien( 'show', $item['id_quanly_duan'] ); ?>
                                             </select>
                                         </td>
                                     </tr>
@@ -304,7 +379,7 @@ class TT_Duan extends WP_List_Table{
                                         </th>
                                         <td>
                                             <div id="nhanvien_thamgia_duan">
-                                                <?php echo TT_Nhanvien::render_list_checkbox_nhanvien(); ?>
+                                                <?php echo TT_Nhanvien::render_list_checkbox_nhanvien( 'show', "id_nhanvien_thamgia[]", $_REQUEST['id_nhanvien_thamgia'] ); ?>
                                             </div>
                                         </td>
                                     </tr>
@@ -325,11 +400,6 @@ class TT_Duan extends WP_List_Table{
                         <div id="hangmuc_add_new">
                             <?php //include( TT_DIR_PATH . '/templates/new_hangmuc.php' ); ?>
                         </div><!-- hangmuc_add_new -->
-                        
-                        
-                        
-                        
-                        
                         
                     </div>
                 </div>            
@@ -352,11 +422,11 @@ class TT_Duan extends WP_List_Table{
             $messages[] = __( 'Vui lòng nhập vào tên dự án', 'simple_plugin' );
         }
         
-        if ( empty( $item['thoigianbatdau'] ) ){ 
+        if ( empty( $item['ngaybatdau'] ) ){ 
             $messages[] = __( 'Vui chọn thời gian bắt đầu cho dự án', 'simple_plugin' );
         }
         
-        if ( empty( $item['thoigianketthuc'] ) ){ 
+        if ( empty( $item['ngayketthuc'] ) ){ 
             $messages[] = __( 'Vui lòng chọn thời gian kết thúc dự án', 'simple_plugin' );
         }
         

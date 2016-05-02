@@ -414,7 +414,7 @@ class TT_Nhanvien extends WP_List_Table{
         
     }
     
-    public static function render_list_checkbox_nhanvien( $display_status = 'show', $checkbox_name = "id_nhanvien_thamgia[]" ){
+    public static function render_list_checkbox_nhanvien( $display_status = 'show', $checkbox_name = "id_nhanvien_thamgia[]", $id_checked = array() ){
         global $wpdb;
         $table_name = $wpdb->prefix . 'nhanvien';
         
@@ -427,8 +427,16 @@ class TT_Nhanvien extends WP_List_Table{
         }
         ob_start();
         if( !empty( $result ) ){
+            $checked = '';
             foreach( $result as $key => $value ){
-                printf( '<input class="id_nhanvien_thamgia" type="checkbox" value="%d" name="%s" data-hoten="%s" /> %s </br>', $value['id_nhanvien'], $checkbox_name, $value['hoten'], $value['hoten'] );
+                
+                if( !empty( $id_checked ) ){
+                    if( in_array( $value['id_nhanvien'], $id_checked ) ){
+                        $checked = 'checked="checked"';
+                    }
+                }
+                
+                printf( '<input class="id_nhanvien_thamgia" type="checkbox" value="%d" name="%s" data-hoten="%s" %s /> %s </br>', $value['id_nhanvien'], $checkbox_name, $value['hoten'], $checked, $value['hoten'] );
             }
         }else{
             printf( '<input class="id_nhanvien_thamgia" type="checkbox" value="%d" name="%s"/> %s </br>', 0, $checkbox_name, __( "Vui lòng thêm dữ liệu nhân viên trước khi chọn", "simple_plugin" ) );

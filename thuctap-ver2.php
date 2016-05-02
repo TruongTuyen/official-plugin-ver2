@@ -49,6 +49,7 @@ class TT_Teamwork{
             CREATE TABLE {$wpdb->prefix}duan(
                 id_duan BIGINT NOT NULL AUTO_INCREMENT,
                 id_doitac BIGINT NOT NULL,
+                id_quanly_duan BIGINT NOT NULL,
                 tenduan VARCHAR(225) NOT NULL,
                 ngaybatdau DATETIME NOT NULL,
                 ngayketthuc DATETIME NOT NULL,
@@ -107,6 +108,7 @@ class TT_Teamwork{
             CREATE TABLE {$wpdb->prefix}congviec(
                 id_congviec BIGINT NOT NULL AUTO_INCREMENT,
                 id_hangmuc BIGINT NOT NULL,
+                ten_congviec VARCHAR(200) NOT NULL,
                 nhanvien_thamgia TEXT NOT NULL,
                 noidung_congviec TEXT NOT NULL,
                 ngaybatdau DATETIME NOT NULL,
@@ -192,63 +194,27 @@ class TT_Teamwork{
         //Dữ liệu mẫu cho bảng duan
         $wpdb->insert( $wpdb->prefix . 'duan', array(
             'id_duan'            => 1,
+            'id_doitac'          => 1,
+            'id_quanly_duan'     => 1,
             'tenduan'            => 'Website bán hàng cho công ty Incomtech',
-            'thoigianbatdau'     => '2015-10-16',
-            'thoigianketthuc'    => '2015-11-16',
-            'trangthai'          => 'Đã hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
-            'ghichu'             => 'Website bán hàng nội thất nhựa'   
+            'ngaybatdau'         => '2015-10-16',
+            'ngayketthuc'        => '2015-11-16',
+            'tinhtrangduan'      => 'Đã hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
+            'mota'               => 'Website bán hàng nội thất nhựa',
+            'display_status'     => 'show'    
         ));
+        
         $wpdb->insert( $wpdb->prefix . 'duan', array(
             'id_duan'            => 2,
-            'tenduan'            => 'Website tin tức nguoivietnews.net',
-            'thoigianbatdau'     => '2015-11-10',
-            'thoigianketthuc'    => '2015-12-10',
-            'trangthai'          => 'Đã hoàn thành',
-            'ghichu'             => 'website tin tức cho người việt'   
-        ));
-        
-        $wpdb->insert( $wpdb->prefix . 'duan', array(
-            'id_duan'            => 3,
-            'tenduan'            => 'Website công ty Otvina',
-            'thoigianbatdau'     => '2016-01-16',
-            'thoigianketthuc'    => '2016-11-16',
-            'trangthai'          => 'Đang triển khai', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
-            'ghichu'             => null   
-        ));
-        $wpdb->insert( $wpdb->prefix . 'duan', array(
-            'id_duan'            => 4,
-            'tenduan'            => 'Website giới thiệu sách',
-            'thoigianbatdau'     => '2016-03-03',
-            'thoigianketthuc'    => '2016-12-10',
-            'trangthai'          => 'Đang triển khai',
-            'ghichu'             => null 
-        ));
-        
-        $wpdb->insert( $wpdb->prefix . 'duan', array(
-            'id_duan'            => 5,
-            'tenduan'            => 'Website giới thiệu khóa học',
-            'thoigianbatdau'     => '2015-10-16',
-            'thoigianketthuc'    => '2015-11-16',
-            'trangthai'          => 'Chưa hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
-            'ghichu'             => 'Website giới thiệu khóa học cho trẻ: kidscourse.vn -- chưa hoàn thành do yêu cầu của khách hàng'   
-        ));
-        $wpdb->insert( $wpdb->prefix . 'duan', array(
-            'id_duan'            => 6,
+            'id_doitac'          => 2,
+            'id_quanly_duan'     => 2,
             'tenduan'            => 'Website bất động sản',
-            'thoigianbatdau'     => '2015-10-16',
-            'thoigianketthuc'    => '2015-11-16',
-            'trangthai'          => 'Chưa hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
-            'ghichu'             => 'Website bất động sản: nhadatphongthuy.vn -- chưa hoàn thành do yêu cầu của khách hàng'   
+            'ngaybatdau'         => '2015-10-16',
+            'ngayketthuc'        => '2015-11-16',
+            'tinhtrangduan'      => 'Đã hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
+            'mota'               => '',
+            'display_status'     => 'show'    
         ));
-        $wpdb->insert( $wpdb->prefix . 'duan', array(
-            'id_duan'            => 7,
-            'tenduan'            => 'Website giới thiệu khóa học',
-            'thoigianbatdau'     => '2015-11-10',
-            'thoigianketthuc'    => '2015-12-10',
-            'trangthai'          => 'Đã hủy',
-            'ghichu'             => 'website giới thiệu các khóa học đồ họa của công ty truyền thông Grouple -- đã hủy do bên B phá hợp đồng'   
-        ));
-        
         //du lieu mau cho bang _nhanvien
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 1, 
