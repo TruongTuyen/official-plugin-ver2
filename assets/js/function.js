@@ -27,52 +27,22 @@ $(document).ready(function() {
     // Datepicker Popups calender to Choose date.
     
     $(function() {
-        $("#thoigianbatdau").datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $("#thoigianbatdau").datepicker("option","minDate", selected)
-            }
-
-        });
-        $("#thoigianketthuc" ).datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $("#thoigianketthuc").datepicker("option","minDate", selected)
-            }
-        });
+        $("#thoigianbatdau").datepicker();
+        $("#thoigianketthuc" ).datepicker();
         
         //hangmuc_tgbatdau, hangmuc_tgketthuc
         
-        $(".hangmuc_tgbatdau").datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $(".hangmuc_tgbatdau").datepicker("option","minDate", selected)
-            }
-
-        });
-        $(".hangmuc_tgketthuc" ).datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $(".hangmuc_tgketthuc").datepicker("option","minDate", selected)
-            }
-        });
+        $(".hangmuc_tgbatdau").datepicker();
+        $(".hangmuc_tgketthuc" ).datepicker();
         
         
         //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
-        $("#hangmuc_congviec_tgbatdau").datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $("#hangmuc_congviec_tgbatdau").datepicker("option","minDate", selected)
-            }
-
-        });
-        $("#hangmuc_congviec_tgketthuc" ).datepicker({
-            minDate: 0,
-            onSelect: function(selected) {
-                $("#hangmuc_congviec_tgketthuc").datepicker("option","minDate", selected)
-            }
-        });
+        $("#hangmuc_congviec_tgbatdau").datepicker();
+        $("#hangmuc_congviec_tgketthuc" ).datepicker();
         
+        //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
+        $(".hangmuc_tgbatdau_isseted").datepicker();
+        $(".hangmuc_tgketthuc_isseted" ).datepicker();
         
         //$("#format").change(function() {
         //$("#datepicker").datepicker("option", "dateFormat", $(this).val());
@@ -289,39 +259,18 @@ $(function(){
 //Date picker init
 //Datepicker
 function datepicker_init(){
-    $(".hangmuc_tgbatdau").datepicker({
-        minDate: 0,
-        onSelect: function(selected) {
-            $(".hangmuc_tgbatdau").datepicker("option","minDate", selected)
-        }
-
-    });
-    $(".hangmuc_tgketthuc" ).datepicker({
-        minDate: 0,
-        onSelect: function(selected) {
-            $(".hangmuc_tgketthuc").datepicker("option","minDate", selected)
-        }
-    });
+    $(".hangmuc_tgbatdau").datepicker();
+    $(".hangmuc_tgketthuc" ).datepicker();
 }
 
 function datepicker_init_cv(){
     //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
-    $(".hangmuc_congviec_tgbatdau").datepicker({
-        minDate: 0,
-        onSelect: function(selected) {
-            $(".hangmuc_congviec_tgbatdau").datepicker("option","minDate", selected)
-        }
-
-    });
-    $(".hangmuc_congviec_tgketthuc" ).datepicker({
-        minDate: 0,
-        onSelect: function(selected) {
-            $(".hangmuc_congviec_tgketthuc").datepicker("option","minDate", selected)
-        }
-    });
+    $(".hangmuc_congviec_tgbatdau").datepicker();
+    $(".hangmuc_congviec_tgketthuc" ).datepicker();
 }
 
 //disable nhan vien duoc chon lam quan ly du an
+/**
 $(document).ready( function(){
     var id_quanly_duan;
     var id_quanly_duan_bandau;
@@ -339,7 +288,7 @@ $(document).ready( function(){
     
     
 });
-
+**/
 /**
 //Lấy ra checkbox nhân viên cho từng công việc trong từng hang mục với các thành viên lấy từ danh sách các thành viên tham gia dự án.
 $(document).ready( function(){

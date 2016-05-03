@@ -215,18 +215,6 @@ class TT_Duan extends WP_List_Table{
         $id_nhanvien_tg_duan = $_POST['id_nhanvien_thamgia'];
         $hangmuc_duan        = $_POST['hangmuc'];
         
-        $data_insert_to_hangmuc = array(
-            'id_hangmuc',
-            'id_duan',
-            'ten_hangmuc',
-            'noi_dung',
-            'ngaybatdau',
-            'ngayketthuc',
-            'display_status',
-            'phantram_hoanthanh',
-            'trangthai_hangmuc'
-        );
-        
         if ( wp_verify_nonce( $_REQUEST['nonce'], basename(__FILE__)) ) {
             $item = shortcode_atts( $default, $_REQUEST );
             
@@ -299,10 +287,117 @@ class TT_Duan extends WP_List_Table{
                     } else {
                         $notice = __( 'Xảy ra lỗi trong quá trình thêm dữ liệu', 'simple_plugin' );
                     }
+                    $redirec = true;
                 } else {
-                    $result = $wpdb->update( $table_name, $item, array( 'id_duan' => $item['id_duan']) );
+                    //$result = $wpdb->update( $table_name, $item, array( 'id_duan' => $item['id_duan']) );
+                    $post_thongtin_duan = $_POST;
                     
                     
+                    echo "<pre>";
+                    print_r( $post_thongtin_duan );
+                    print_r( $item );
+                    echo "</pre>";
+                    //Update dữ liệu bảng duan
+                    $result = $wpdb->update( $table_name, $item, array( 'id_duan' => $post_thongtin_duan['id_duan'] ) );
+                    
+                    //Update du lieu bang chitiet_duan
+                    if( !empty( $post_thongtin_duan['id_nhanvien_thamgia'] ) ){
+                        $id_nhanvien_tg_duan = implode( ',', $post_thongtin_duan );
+                        $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan = {$post_thongtin_duan['id_duan']}" );
+                        foreach( $post_thongtin_duan['id_nhanvien_thamgia'] as $key=>$value ){
+                            $result = $wpdb->insert( $table_chitiet_duan, array( "id_duan"=> $post_thongtin_duan['id_duan'], "id_nhanvien" => $value ) );
+                        }
+                    }
+                    //Update du lieu bang hang muc
+                    if( !empty( $post_thongtin_duan['hangmuc'] ) ){
+                        foreach( $post_thongtin_duan['hangmuc'] as $key=>$value ){
+                            //=========================>
+                            if( isset( $value['id_hangmuc'] ) && !empty( $value['id_hangmuc'] ) && ($value['id_hangmuc'] != 0) ){ //Update dữ liệu đã có
+                                $each_id_hangmuc = $value['id_hangmuc'];
+                                $data_insert_to_hangmuc = array(
+                                    'id_hangmuc'            => $each_id_hangmuc,
+                                    'id_duan'               => $item['id_duan'],
+                                    'ten_hangmuc'           => $value['tenhangmuc'],
+                                    'noi_dung'              => $value['noidung_hangmuc'],
+                                    'ngaybatdau'            => $value['thoigianbatdau'],
+                                    'ngayketthuc'           => $value['thoigianketthuc'],
+                                    'display_status'        => 'show',
+                                    'phantram_hoanthanh'    => $value['phantram_hoanthanh_hangmuc'],
+                                    'trangthai_hangmuc'     => $value['trangthai_hoanthanh']
+                                );
+                                $result = $wpdb->update( $table_hangmuc, $data_insert_to_hangmuc, array( 'id_hangmuc' => $value['id_hangmuc'] ) );
+                                if( isset( $value['congviec'] ) && !empty( $value['congviec'] ) && ($value['congviec'] !=0)  ){
+                                    foreach( $value['congviec'] as $k=>$v ){
+                                        if( isset( $v['id_congviec'] ) ){ //update cong viêc dựa vào id có sẵn
+                                            $data_insert_to_congviec = array(
+                                                'id_congviec'       => $v['id_congviec'],
+                                                'id_hangmuc'        => $each_id_hangmuc,
+                                                'ten_congviec'      => $v['tencongviec'],
+                                                'nhanvien_thamgia'  => implode( ',', $v['nhanvien_thamgia'] ),
+                                                'noidung_congviec'  => $v['noidungcongviec'],
+                                                'ngaybatdau'        => $v['tg_batdau'],
+                                                'ngayketthuc'       => $v['tg_ketthuc'],
+                                                'display_status'    => 'show',
+                                                'trangthai_congviec'=> $v['trangthai_hoanthanh']
+                                            );
+                                            $result = $wpdb->update( $table_congviec, $data_insert_to_congviec, array( "id_congviec" => $v['id_congviec'] ) );
+                                        }else{ //Thêm mới công việc
+                                            $data_insert_to_congviec = array(
+                                                'id_congviec'       => 0,
+                                                'id_hangmuc'        => $each_id_hangmuc,
+                                                'ten_congviec'      => $v['tencongviec'],
+                                                'nhanvien_thamgia'  => implode( ',', $v['nhanvien_thamgia'] ),
+                                                'noidung_congviec'  => $v['noidungcongviec'],
+                                                'ngaybatdau'        => $v['tg_batdau'],
+                                                'ngayketthuc'       => $v['tg_ketthuc'],
+                                                'display_status'    => 'show',
+                                                'trangthai_congviec'=> $v['trangthai_hoanthanh']
+                                            );
+                                            $result = $wpdb->insert( $table_congviec, $data_insert_to_congviec );
+                                        } 
+                                    }//end foreach
+                                }//end if        
+                                
+                            }else{//Thêm mới dữ liệu
+                                $data_insert_to_hangmuc = array(
+                                    'id_hangmuc'            => 0,
+                                    'id_duan'               => $item['id_duan'],
+                                    'ten_hangmuc'           => $value['tenhangmuc'],
+                                    'noi_dung'              => $value['noidung_hangmuc'],
+                                    'ngaybatdau'            => $value['thoigianbatdau'],
+                                    'ngayketthuc'           => $value['thoigianketthuc'],
+                                    'display_status'        => 'show',
+                                    'phantram_hoanthanh'    => $value['phantram_hoanthanh_hangmuc'],
+                                    'trangthai_hangmuc'     => $value['trangthai_hoanthanh']
+                                );
+                                $result = $wpdb->insert( $table_hangmuc, $data_insert_to_hangmuc );
+                                $id_hangmuc = $wpdb->insert_id;
+                                
+                                //Thêm dữ liệu vào bảng công việc
+                                if( isset( $value['congviec'] ) && !empty( $value['congviec'] ) ){
+                                    foreach( $value['congviec'] as $k=>$v ){
+                                        
+                                        $data_insert_to_congviec = array(
+                                            'id_congviec'       => 0,
+                                            'id_hangmuc'        => $id_hangmuc,
+                                            'ten_congviec'      => $v['tencongviec'],
+                                            'nhanvien_thamgia'  => implode( ',', $v['nhanvien_thamgia'] ),
+                                            'noidung_congviec'  => $v['noidungcongviec'],
+                                            'ngaybatdau'        => $v['tg_batdau'],
+                                            'ngayketthuc'       => $v['tg_ketthuc'],
+                                            'display_status'    => 'show',
+                                            'trangthai_congviec'=> $v['trangthai_hoanthanh']
+                                        );
+                                        $result = $wpdb->insert( $table_congviec, $data_insert_to_congviec );
+                                    }
+                                }
+                            }
+                            
+                            //=========================>
+                        }
+                    }
+                    
+                    //die();
                     if ( $result ) {
                         $message = __( 'Cập nhật dữ liêu thành công', 'simple_plugin' );
                     } else {
@@ -372,9 +467,12 @@ class TT_Duan extends WP_List_Table{
             <?php if ( !empty($message) ){ ?>
                 <div id="message" class="updated"><p><?php echo $message ?></p></div>
                 <?php 
-                    $location = get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');
-                    wp_safe_redirect( $location );
-                    exit; 
+                    if( $redirec ){
+                        $location = get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');
+                        wp_safe_redirect( $location );
+                        exit; 
+                    }
+                    
                 ?>
             <?php }//!empty( $message ) ?>
             <form id="form" method="POST">
@@ -535,7 +633,7 @@ class TT_Duan extends WP_List_Table{
                                                                     <label for="hangmuc_tgbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
                                                                 </th>
                                                                 <td>
-                                                                    <input value="<?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( $value['ngaybatdau'] ); } ?>" class="hangmuc_tgbatdau" name="hangmuc[<?php echo $key; ?>][thoigianbatdau]" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ){ echo esc_html( $item['thoigianbatdau'] ); };?>" class="code"  required />
+                                                                    <input value="<?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( $value['ngaybatdau'] ); } ?>" class="hangmuc_tgbatdau_isseted" name="hangmuc[<?php echo $key; ?>][thoigianbatdau]" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ){ echo esc_html( $item['thoigianbatdau'] ); };?>" class="code"  required />
                                                                 </td>
                                                             </tr>
                                                             <tr class="form-field">
@@ -543,7 +641,7 @@ class TT_Duan extends WP_List_Table{
                                                                     <label for="hangmuc_tgketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
                                                                 </th>
                                                                 <td>
-                                                                    <input class="hangmuc_tgketthuc" name="hangmuc[<?php echo $key; ?>][thoigianketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( $value['ngayketthuc'] ); } ?>" class="code"  required />
+                                                                    <input class="hangmuc_tgketthuc_isseted" name="hangmuc[<?php echo $key; ?>][thoigianketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( $value['ngayketthuc'] ); } ?>" class="code"  required />
                                                                 </td>
                                                             </tr>
                                                             <tr class="form-field">
@@ -881,22 +979,4 @@ class TT_Duan extends WP_List_Table{
     
 }//End class TT_Duan
 new TT_Duan();
-/*
- CREATE TABLE Orders
-(
-O_Id int NOT NULL,
-OrderNo int NOT NULL,
-P_Id int,
-PRIMARY KEY (O_Id),
-FOREIGN KEY (P_Id) REFERENCES Persons(P_Id)
-)
 
-CREATE TABLE Orders
-(
-O_Id int NOT NULL,
-OrderNo int NOT NULL,
-P_Id int,
-PRIMARY KEY (O_Id),
-CONSTRAINT fk_PerOrders FOREIGN KEY (P_Id) REFERENCES Persons(P_Id)
-)
-*/
