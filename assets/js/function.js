@@ -429,3 +429,71 @@ $(document).ready(function(e){
     });
 });
 
+//Xóa công việc trong hạng mục với ajax
+$(document).on('click','.remove_hangmuc_cong_viec_button_by_ajax',function(e){
+    e.preventDefault();
+    
+    var is_sure_delete = confirm( "Bạn có chắc chắn muốn xóa. Hãy thận trọng, dữ liệu sẽ bị mất." );
+    if( is_sure_delete ){
+        var id_congviec  = $(this).data('id_congviec');
+    
+        var data = {
+            action            : 'tt_ajax_delete_congviec_in_hangmuc',
+            security          : tt_ajax_load_form.security,
+            post_id_congviec  : id_congviec,
+        }
+        
+        var t = $(this);
+        //var content_div = $(this).parent().parent().next().find('#hangmuc_congviec_wrapper_all');
+        $.post(ajaxurl, data, function(response){
+            console.log( response );
+           if( response.type == 'done' ){
+                $("#ajax_box_notice").html("");
+                $("#ajax_box_notice").append( response.data );
+                
+                if( response.is_done == 'yes'){
+                    t.closest('.hangmuc_congviec_items_wrapper').remove();
+                }
+                $("html, body").animate({ scrollTop: 0 }, "slow");
+                
+           }
+        });
+    }else{
+        return false;
+    }
+  
+});
+
+//Xóa hạng mục với ajax
+$(document).on('click','.remove_hangmuc_button_by_ajax',function(e){
+    e.preventDefault();
+    
+    var is_sure_delete = confirm( "Bạn có chắc chắn muốn xóa. Hãy thận trọng, dữ liệu sẽ bị mất." );
+    if( is_sure_delete ){
+        var id_hangmuc  = $(this).data('id_hangmuc');
+    
+        var data = {
+            action            : 'tt_ajax_delete_hangmuc_in_duan',
+            security          : tt_ajax_load_form.security,
+            post_id_hangmuc   : id_hangmuc,
+        }
+        
+        var t = $(this);
+        //var content_div = $(this).parent().parent().next().find('#hangmuc_congviec_wrapper_all');
+        $.post(ajaxurl, data, function(response){
+            console.log( response );
+           if( response.type == 'done' ){
+                $("#ajax_box_notice").html("");
+                $("#ajax_box_notice").append( response.data );
+                
+                if( response.is_done == 'yes'){
+                    t.closest('.hangmuc_items_wrapper').remove();
+                }
+                $("html, body").animate({ scrollTop: 0 }, "slow");
+           }
+        });
+    }else{
+        return false;
+    }
+  
+});

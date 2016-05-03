@@ -17,6 +17,12 @@ class TT_Duan extends WP_List_Table{
         
         add_action( 'wp_ajax_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
         add_action( 'wp_ajax_nopriv_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
+        
+        add_action( 'wp_ajax_tt_ajax_delete_congviec_in_hangmuc', array( $this, 'tt_ajax_delete_congviec_callback' ) );
+        add_action( 'wp_ajax_nopriv_tt_ajax_delete_congviec_in_hangmuc', array( $this, 'tt_ajax_delete_congviec_callback' ) );
+        
+        add_action( 'wp_ajax_tt_ajax_delete_hangmuc_in_duan', array( $this, 'tt_ajax_delete_hangmuc_callback' ) );
+        add_action( 'wp_ajax_nopriv_tt_ajax_delete_hangmuc_in_duan', array( $this, 'tt_ajax_delete_hangmuc_callback' ) );
     }
     
     function tt_ob_start(){
@@ -349,15 +355,16 @@ class TT_Duan extends WP_List_Table{
                     }
                     
                     $item['id_nhanvien_thamgia'] = $formated_nv_tg_duan_from_db;
-                    echo "<pre>";
-                    print_r( $item );
-                    echo "</pre>";
+                    
                 }
                 
                 
             ?>
         
             <div class="icon32 icon32-posts-post" id="icon-edit"><br/></div>
+            <div id="ajax_box_notice">
+                
+            </div>
             <h2><?php if( $item['id_duan'] != 0 ){ _e( 'Sửa dự án', 'simple_plugin'); }else{ _e( 'Thêm mới dự án', 'simple_plugin'); } ?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
@@ -483,15 +490,12 @@ class TT_Duan extends WP_List_Table{
                                 <?php
                                     
                                     if( !empty( $thongtin_hangmuc ) ){
-                                        echo "<pre>";
-                                        print_r( $thongtin_hangmuc );
-                                        echo "</pre>";
                                         foreach( $thongtin_hangmuc as $key=> $value ){ ?>
                                             <div class="hangmuc_items_wrapper">
                                                 <div class="accordionButton" id="a">
                                                     <span># Hạng mục</span><span>:</span> <span class="span_ten_hangmuc"><?php if( !empty( $value['ten_hangmuc'] ) ){ echo esc_html( $value['ten_hangmuc'] ); } ?></span>
                                                     <span class="plusMinus">+</span>
-                                                    <span><a href="#" class="remove_hangmuc_button">Xóa</a></span>
+                                                    <span><a href="#" class="remove_hangmuc_button_by_ajax" data-id_hangmuc="<?php if( !empty( $value['id_hangmuc'] ) ){ echo esc_attr( $value['id_hangmuc'] ); } ?>">Xóa</a></span>
                                                 </div>
                                                 <div class="accordionContent">
                                                     <table cellspacing="2" cellpadding="5" style="width: 100%;" class="form-table form-table-hangmuc">
@@ -559,7 +563,7 @@ class TT_Duan extends WP_List_Table{
                                                                     if( !empty( $value['congviec'] ) ){ $post_stt_cv = count( $value['congviec'] ); }
                                                                 ?>
                                                                 <th valign="top" scope="row">
-                                                                    <h2><a class="add-new-h2" href="#" id="button_hangmuc_them_congviec" data-stt_cv="<?php echo $post_stt_cv; ?>" data-stt_hangmuc="<?php echo $so_thutu; ?>">Thêm công việc</a></h2>
+                                                                    <h2><a class="add-new-h2" href="#" id="button_hangmuc_them_congviec" data-stt_cv="<?php echo $post_stt_cv; ?>" data-stt_hangmuc="<?php echo $key; ?>">Thêm công việc</a></h2>
                                                                 </th>
                                                                 <td>
                                                                     <div class="hangmuc_congviec_wrapper_all" id="hangmuc_congviec_wrapper_all">
@@ -575,7 +579,7 @@ class TT_Duan extends WP_List_Table{
                                                                                     <div class="accordionButton2" >
                                                                                         <span># Công việc</span><span>:</span> <span class="span_ten_hangmuc_congviec"><?php if( !empty( $v['ten_congviec'] ) ){ echo esc_html( $v['ten_congviec'] ); }?></span>
                                                                                         <span class="plusMinus">+</span>
-                                                                                        <span><a href="#" class="remove_hangmuc_cong_viec_button">Xóa</a></span>
+                                                                                        <span><a href="#" class="remove_hangmuc_cong_viec_button_by_ajax" data-id_congviec="<?php if( !empty( $v['id_congviec'] ) ){ echo esc_html( $v['id_congviec'] ); }?>">Xóa</a></span>
                                                                                     </div>
                                                                                     <div class="accordionContent2">
                                                                                         <div class="hangmuc_them_congviec" id="hangmuc_them_congviec_<?php echo $unig_id; ?>">
@@ -790,6 +794,84 @@ class TT_Duan extends WP_List_Table{
         );
 		die( wp_send_json( $result ) );
         
+    }
+    
+    public function  tt_ajax_delete_congviec_callback(){
+        global $wpdb;
+        $table_congviec   = $wpdb->prefix . 'congviec';
+        
+        $type             = 'done';
+        $post_id_congviec = $_POST['post_id_congviec'];
+        
+        if( !check_ajax_referer( 'tt_ajax_form', 'security' ) ){
+            $type = 'false';
+            $result = array( 
+                'type' => $type,
+                'data' => 'Lỗi bảo mật! Vui lòng thử lại sau',
+                'is_done' => 'no'
+            );
+		    die( wp_send_json( $result ) );
+        }
+        
+        $res = $wpdb->update( $table_congviec, array( 'display_status' => 'hidden' ), array( "id_congviec" => $post_id_congviec ) );
+        
+        if( $res ){
+            $data = '<div id="message" class="updated"><p>Xóa thành công công việc</p></div>';
+            $is_done = 'yes';
+        }else{
+            $data = '<div id="notice" class="error"><p>Lỗi, dữ liệu không chính xác</p></div>';
+            $is_done = 'no';
+        }
+       
+        $result = array( 
+            'type' => $type, 
+            'data' => $data,
+            'is_done' => $is_done,
+        );
+		die( wp_send_json( $result ) );
+    }
+    
+    public static function tt_ajax_delete_hangmuc_callback(){
+        global $wpdb;
+        $table_congviec   = $wpdb->prefix . 'congviec';
+        $table_hangmuc    = $wpdb->prefix . 'hangmuc';
+        
+        $type             = 'done';
+        $post_id_hangmuc  = $_POST['post_id_hangmuc'];
+        
+        if( !check_ajax_referer( 'tt_ajax_form', 'security' ) ){
+            $type = 'false';
+            $result = array( 
+                'type' => $type,
+                'data' => 'Lỗi bảo mật! Vui lòng thử lại sau',
+                'is_done' => 'no'
+            );
+		    die( wp_send_json( $result ) );
+        }
+        
+        //$res = $wpdb->update( $table_congviec, array( 'display_status' => 'hidden' ), array( "id_congviec" => $post_id_congviec ) );
+        //Kiểm tra xem trong hạng mục có còn công việc không, nếu có thì k thể xóa
+        $check_id_congviec = $wpdb->get_results( $wpdb->prepare( "SELECT id_congviec FROM {$table_congviec} WHERE id_hangmuc = %d AND display_status = %s", $post_id_hangmuc, 'show' ), ARRAY_A );
+        if( !empty( $check_id_congviec ) ){ //k cho xóa, y/c xóa hết các công việc có trong hạng mục này trước
+            $data = '<div id="notice" class="error"><p>Lỗi! Vui lòng xóa hết các công việc có trong hạng mục này.</p></div>';
+            $is_done = 'no';
+        }else{ //Cho xóa hạng mục
+            $res = $wpdb->update( $table_hangmuc, array( 'display_status' => 'hidden' ), array( "id_hangmuc" => $post_id_hangmuc ) );
+            if( $res ){
+                $data = '<div id="message" class="updated"><p>Xóa thành công hạng mục</p></div>';
+                $is_done = 'yes';
+            }else{
+                $data = '<div id="notice" class="error"><p>Lỗi, dữ liệu không chính xác</p></div>';
+                $is_done = 'no';
+            }
+        }
+        
+        $result = array( 
+            'type' => $type, 
+            'data' => $data,
+            'is_done' => $is_done,
+        );
+		die( wp_send_json( $result ) );
     }
     
     
