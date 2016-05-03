@@ -1,5 +1,6 @@
 <?php
 class TT_Duan extends WP_List_Table{
+    public static $message;
     public function __construct(){
        
        global $status, $page;
@@ -109,6 +110,7 @@ class TT_Duan extends WP_List_Table{
         global $wpdb;
         $table_duan         = $wpdb->prefix . 'duan'; 
         $table_chitiet_duan = $wpdb->prefix . 'chitiet_duan';
+        $table_hangmuc      = $wpdb->prefix . 'hangmuc';
 
         if ( 'delete' === $this->current_action() && $_REQUEST['page'] == 'ds_duan' ) {
             //$ids     = isset( $_REQUEST['id_duan'] ) ? $_REQUEST['id_duan'] : array();
@@ -121,7 +123,26 @@ class TT_Duan extends WP_List_Table{
                 //$wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan IN( {$ids} )" );
             }elseif( $id_duan != '' ){
                 //$wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan = {$id_duan}" );
-                //$wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan = {$id_duan}" );
+                
+                $find_id_hangmuc_in_duan = $wpdb->get_results( $wpdb->prepare( "SELECT id_hangmuc FROM {$table_hangmuc} WHERE id_duan = %d AND display_status = %s", $id_duan, 'show' ), ARRAY_A );
+                
+                if( !empty( $find_id_hangmuc_in_duan ) ){ //yêu cầu xóa hết các hạng mục trước khi xóa dự án
+                    //echo '<script type="text/javascript">alert("Trước khi xóa dự án này, vui lòng xóa hết các hạng mục có trong dự án!");</script>';
+                    self::$message = '<div class="error below-h2" id="message"><p>Trước khi xóa dự án này, vui lòng xóa hết các hạng mục có trong dự án!</p></div>';
+                }else{ //Được phép xóa
+                    $wpdb->query( "DELETE FROM {$table_chitiet_duan} WHERE id_duan = {$id_duan}" );
+                    $result_update = $wpdb->update( $table_duan, array( "display_status" => "hidden" ),array( "id_duan" => $id_duan ) );
+                    
+                    if( $result_update ){
+                        //echo '<script type="text/javascript">alert("Xóa dự án thành công!");</script>';
+                        self::$message = '<div class="updated below-h2" id="message"><p>Xóa dự án thành công!</p></div>';
+                    }else{
+                        //echo '<script type="text/javascript">alert("Lỗi! Không thể xóa dự án. Vui lòng thử lại");</script>';
+                        self::$message = '<div class="error below-h2" id="message"><p>Lỗi! Không thể xóa dự án. Vui lòng thử lại</p></div>';
+                    }
+                }
+                //if( )
+                //
             }  
             
         }
@@ -169,10 +190,8 @@ class TT_Duan extends WP_List_Table{
         global $wpdb;
         $table = new TT_Duan();
         $table->prepare_items();
-        $message = '';
-        if ('delete' === $table->current_action()) {
-            $message = '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Số bản ghi đã xóa: %d', 'custom_table_example'), count( $_REQUEST['id_duan']) ) . '</p></div>';
-        }
+        $message = self::$message;
+        
 ?>
     <div class="wrap">
         <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
@@ -291,12 +310,7 @@ class TT_Duan extends WP_List_Table{
                 } else {
                     //$result = $wpdb->update( $table_name, $item, array( 'id_duan' => $item['id_duan']) );
                     $post_thongtin_duan = $_POST;
-                    
-                    
-                    echo "<pre>";
-                    print_r( $post_thongtin_duan );
-                    print_r( $item );
-                    echo "</pre>";
+                 
                     //Update dữ liệu bảng duan
                     $result = $wpdb->update( $table_name, $item, array( 'id_duan' => $post_thongtin_duan['id_duan'] ) );
                     
@@ -666,11 +680,12 @@ class TT_Duan extends WP_List_Table{
                                                                 <td>
                                                                     <div class="hangmuc_congviec_wrapper_all" id="hangmuc_congviec_wrapper_all">
                                                                         <?php
+                                                                            $stt_hangmuc = $key;
                                                                             if( !empty( $value['congviec'] ) ){ 
                                                                               foreach( $value['congviec'] as $k=>$v ){ ?>
                                                                                 <?php 
                                                                                 $unig_id = uniqid(); 
-                                                                                $stt_hangmuc = $key;
+                                                                                
                                                                                 $stt_congviec = $k;
                                                                                 ?>
                                                                                 <div class="hangmuc_congviec_items_wrapper">
