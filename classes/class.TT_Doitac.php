@@ -301,6 +301,13 @@ class TT_Doitac extends WP_List_Table{
         }
     }
     
+    public static function get_doitac_name_by_id( $id_doitac ){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'doitac';
+        $doitac_name = $wpdb->get_var( $wpdb->prepare("SELECT hoten_tendonvi FROM {$table_name} WHERE display_status = %s AND id_doitac = %d", 'show', $id_doitac) );
+        return $doitac_name;
+    }
+    
     
 }
 new TT_Doitac();

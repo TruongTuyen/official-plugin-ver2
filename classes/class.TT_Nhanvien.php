@@ -427,15 +427,14 @@ class TT_Nhanvien extends WP_List_Table{
         }
         ob_start();
         if( !empty( $result ) ){
-            $checked = '';
+            
             foreach( $result as $key => $value ){
-                
+                $checked = '';
                 if( !empty( $id_checked ) ){
                     if( in_array( $value['id_nhanvien'], $id_checked ) ){
                         $checked = 'checked="checked"';
                     }
                 }
-                
                 printf( '<input class="id_nhanvien_thamgia" type="checkbox" value="%d" name="%s" data-hoten="%s" %s /> %s </br>', $value['id_nhanvien'], $checkbox_name, $value['hoten'], $checked, $value['hoten'] );
             }
         }else{
@@ -478,6 +477,30 @@ class TT_Nhanvien extends WP_List_Table{
         return ob_get_clean();
         
     } 
+    
+    public static function get_nhanvien_name_by_id( $id_nhanvien ){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'nhanvien';
+        
+        $nhanvien_name = $wpdb->get_var( $wpdb->prepare( "SELECT hoten FROM {$table_name} WHERE display_status = %s AND id_nhanvien = %d", 'show', $id_nhanvien ) );
+        return $nhanvien_name;
+    }
+    
+    public static function tt_get_deleted_nhanvien(){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'nhanvien';
+        
+        $deleted_nhanvien = $wpdb->get_results( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_name} WHERE display_status = %s", 'hidden' ), ARRAY_A );
+        $formated = array();
+        
+        if( !empty( $deleted_nhanvien ) ){
+            foreach( $deleted_nhanvien as $key=>$value ){
+                $formated[] = $value['id_nhanvien'];
+            }
+        }
+        
+        return $formated;
+    }
     
     
     

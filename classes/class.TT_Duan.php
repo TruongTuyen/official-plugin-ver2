@@ -10,13 +10,17 @@ class TT_Duan extends WP_List_Table{
             )
         );
         
-        
+        add_action( 'init', array( $this, 'tt_ob_start' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
         add_action( 'wp_ajax_tt_ajax_load_form_them_congviec_in_hangmuc', array( $this, 'tt_ajax_load_form_them_congviec_in_hangmuc_callback' ) );
         add_action( 'wp_ajax_nopriv_tt_ajax_load_form_them_congviec_in_hangmuc', array( $this, 'tt_ajax_load_form_them_congviec_in_hangmuc_callback' ) );
         
         add_action( 'wp_ajax_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
         add_action( 'wp_ajax_nopriv_tt_ajax_load_form_them_hangmuc', array( $this, 'tt_ajax_load_form_them_hangmuc_callback' ) );
+    }
+    
+    function tt_ob_start(){
+        ob_start();
     }
     
     function column_default( $item, $column_name ){
@@ -27,25 +31,33 @@ class TT_Duan extends WP_List_Table{
         return '<em>' . $item['id_duan'] . '</em>';
     }
     
-    function column_trangthai( $item ){
-        return '<em>' . $item['trangthai'] . '</em>'; // trang thai: da hoan thanh, dang thuc hien, chua hoan thanh, da huy
+    function column_tendoitac( $item ){
+        return '<em>' . $item['tendoitac'] . '</em>';
     }
     
-    function column_thoigianbatdau( $item ){
-        return '<em>' . $item['thoigianbatdau'] . '</em>';
+    function column_qlduan( $item ){
+        return '<em>' . $item['qlduan'] . '</em>';
     }
     
-    function column_thoigianketthuc( $item ){
-        return '<em>' . $item['thoigianketthuc'] . '</em>';
+    function column_tinhtrangduan( $item ){
+        return '<em>' . $item['tinhtrangduan'] . '</em>'; // trang thai: da hoan thanh, dang thuc hien, chua hoan thanh, da huy
     }
     
-    function column_ghichu( $item ){
-        return '<em>' . $item['ghichu'] . '</em>';
+    function column_ngaybatdau( $item ){
+        return '<em>' . $item['ngaybatdau'] . '</em>';
+    }
+    
+    function column_ngayketthuc( $item ){
+        return '<em>' . $item['ngayketthuc'] . '</em>';
+    }
+    
+    function column_mota( $item ){
+        return '<em>' . $item['mota'] . '</em>';
     }
 
     function column_tenduan( $item ){
         $actions = array(
-            'edit'   => sprintf( '<a href="?page=new_duan&id_duan=%s">%s</a>', $item['id_duan'], __( 'Sửa dữ liệu', 'simple_plugin' ) ),
+            'edit'   => sprintf( '<a href="?page=new_duan&action=edit&id_duan=%s">%s</a>', $item['id_duan'], __( 'Sửa dữ liệu', 'simple_plugin' ) ),
             'delete' => sprintf( '<a href="?page=%s&action=delete&id_duan=%s">%s</a>', $_REQUEST['page'], $item['id_duan'], __( 'Xóa dữ liệu', 'simple_plugin' ) ),
         );
         return sprintf('%s %s', $item['tenduan'], $this->row_actions( $actions ) );
@@ -61,10 +73,13 @@ class TT_Duan extends WP_List_Table{
             'cb'                => '<input type="checkbox" />', //Tạo nut checkbox
             'id_duan'           => __( 'ID', 'simple_plugin' ),
             'tenduan'           => __( 'Tên dự án', 'simple_plugin' ),
-            'thoigianbatdau'    => __( 'Thời gian bắt đầu', 'simple_plugin' ),
-            'thoigianketthuc'   => __( 'Thời gian kết thúc', 'simple_plugin' ),
-            'trangthai'         => __( 'Trạng thái', 'simple_plugin' ),    
-            'ghichu'            => __( 'Ghi chú', 'simple_plugin' ),
+            'tendoitac'         => __( 'Đối tác', 'simple_plugin' ),
+            'qlduan'            => __( 'Quản lý dự án', 'simple_plugin' ),
+            
+            'ngaybatdau'        => __( 'Ngày bắt đầu', 'simple_plugin' ),
+            'ngayketthuc'       => __( 'Ngày kết thúc', 'simple_plugin' ),
+            'tinhtrangduan'     => __( 'Trạng thái', 'simple_plugin' ),    
+            'mota'              => __( 'Ghi chú', 'simple_plugin' ),
         );
         return $columns;
     }
@@ -122,8 +137,17 @@ class TT_Duan extends WP_List_Table{
         $orderby = (isset( $_REQUEST['orderby'] ) && in_array($_REQUEST['orderby'], array_keys( $this->get_sortable_columns())) ) ? $_REQUEST['orderby'] : 'id_duan';
         $order   = (isset( $_REQUEST['order'] ) && in_array($_REQUEST['order'], array( 'asc', 'desc' ))) ? $_REQUEST['order'] : 'asc';
  
-        $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name ORDER BY $orderby $order LIMIT %d OFFSET %d", $per_page, $offset ), ARRAY_A );
-
+        $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d OFFSET %d",'show', $per_page, $offset ), ARRAY_A );
+        
+        if( !empty( $this->items ) ){
+            foreach( $this->items as $k=>$v ){
+                $tendoitac = TT_Doitac::get_doitac_name_by_id( $v['id_doitac'] );
+                $tennhanvien = TT_Nhanvien::get_nhanvien_name_by_id( $v['id_quanly_duan'] );
+                $this->items[$k]['tendoitac'] = $tendoitac;
+                $this->items[$k]['qlduan']    = $tennhanvien;
+            }
+        }
+       
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
             'per_page'    => $per_page, // per page constant defined at top of method
@@ -164,6 +188,8 @@ class TT_Duan extends WP_List_Table{
         $table_hangmuc      = $wpdb->prefix . 'hangmuc';
         $table_chitiet_duan = $wpdb->prefix . 'chitiet_duan';
         $table_congviec     = $wpdb->prefix . 'congviec';
+        $table_nhanvien     = $wpdb->prefix . 'nhanvien';
+        
         
         $message = '';
         $notice = '';
@@ -171,6 +197,7 @@ class TT_Duan extends WP_List_Table{
         $default = array(
             'id_duan'           => 0,
             'id_doitac'         => '',
+            'id_quanly_duan'    => '',
             'tenduan'           => '',
             'ngaybatdau'        => '',
             'ngayketthuc'       => '',
@@ -292,13 +319,56 @@ class TT_Duan extends WP_List_Table{
         }
         ?>
         <div class="wrap">
+        
+            <?php
+                
+                
+                if( isset( $_GET['action'] ) && $_GET['action'] === 'edit' && isset( $_GET['id_duan'] ) && is_numeric( $_GET['id_duan'] ) ){
+                    $nv_tg_duan_from_db = $wpdb->get_results( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_chitiet_duan} WHERE id_duan = %d", $_GET['id_duan'] ), ARRAY_A );
+                    $deleted_nhanvien   = $wpdb->get_results( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_nhanvien} WHERE display_status = %s", 'hidden' ), ARRAY_A );
+                    
+                    $formated_nv_tg_duan_from_db = array();
+                    $formated_deleted_nhanvien   = array();
+                    
+                    if( is_array( $nv_tg_duan_from_db ) ){
+                        foreach( $nv_tg_duan_from_db as $k=>$v ){
+                            $formated_nv_tg_duan_from_db[] = $v['id_nhanvien'];
+                        } 
+                    }
+                    
+                    if( is_array( $deleted_nhanvien ) ){
+                        foreach( $deleted_nhanvien as $k=>$v ){
+                            $formated_deleted_nhanvien[] = $v['id_nhanvien'];
+                        }
+                        
+                        foreach( $formated_nv_tg_duan_from_db as $k=>$v ){
+                            if( in_array( $v, $formated_deleted_nhanvien ) ){
+                                unset( $formated_nv_tg_duan_from_db[$k] );
+                            }
+                        }
+                    }
+                    
+                    $item['id_nhanvien_thamgia'] = $formated_nv_tg_duan_from_db;
+                    echo "<pre>";
+                    print_r( $item );
+                    echo "</pre>";
+                }
+                
+                
+            ?>
+        
             <div class="icon32 icon32-posts-post" id="icon-edit"><br/></div>
-            <h2><?php _e( 'Thêm mới dự án', 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
+            <h2><?php if( $item['id_duan'] != 0 ){ _e( 'Sửa dự án', 'simple_plugin'); }else{ _e( 'Thêm mới dự án', 'simple_plugin'); } ?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
             <?php }// !empty( $notice ) ?>
             <?php if ( !empty($message) ){ ?>
                 <div id="message" class="updated"><p><?php echo $message ?></p></div>
+                <?php 
+                    $location = get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');
+                    wp_safe_redirect( $location );
+                    exit; 
+                ?>
             <?php }//!empty( $message ) ?>
             <form id="form" method="POST">
                 <input type="hidden" name="nonce" value="<?php echo wp_create_nonce(basename(__FILE__))?>"/>
@@ -379,7 +449,7 @@ class TT_Duan extends WP_List_Table{
                                         </th>
                                         <td>
                                             <div id="nhanvien_thamgia_duan">
-                                                <?php echo TT_Nhanvien::render_list_checkbox_nhanvien( 'show', "id_nhanvien_thamgia[]", $_REQUEST['id_nhanvien_thamgia'] ); ?>
+                                                <?php echo TT_Nhanvien::render_list_checkbox_nhanvien( 'show', "id_nhanvien_thamgia[]", $item['id_nhanvien_thamgia'] ); ?>
                                             </div>
                                         </td>
                                     </tr>
@@ -394,11 +464,224 @@ class TT_Duan extends WP_List_Table{
                 
                 <div class="metabox-holder" id="poststuff">
                     <div id="post-body-add-hangmuc">
+                        <?php $post_stt = 0; ?>
+                        <?php if( isset( $_GET['action'] ) && $_GET['action'] === 'edit' && isset( $_GET['id_duan'] ) && is_numeric( $_GET['id_duan'] ) ){ ?>
+                                <?php
+                                    $get_id_duan = $_GET['id_duan'];
+                                    $thongtin_hangmuc = self::tt_get_tt_hangmuc_by_id_duan( $get_id_duan );
+                                    
+                                    if( !empty( $thongtin_hangmuc ) ){
+                                        $post_stt = count( $thongtin_hangmuc );
+                                    }
+                                ?>
+                        <?php } ?>        
                         <div id="post-body-content">
-                            <h2>Hạng mục <a class="add-new-h2" href="#" id="them-moi-hangmuc-btn" data-stt="0"><?php _e( 'Thêm mới hạng mục', 'simple_plugin' ); ?></a></h2>
+                            <h2>Hạng mục <a class="add-new-h2" href="#" id="them-moi-hangmuc-btn" data-stt="<?php echo $post_stt; ?>"><?php _e( 'Thêm mới hạng mục', 'simple_plugin' ); ?></a></h2>
                         </div>
                         <div id="hangmuc_add_new">
-                            <?php //include( TT_DIR_PATH . '/templates/new_hangmuc.php' ); ?>
+                            <?php if( isset( $_GET['action'] ) && $_GET['action'] === 'edit' && isset( $_GET['id_duan'] ) && is_numeric( $_GET['id_duan'] ) ){ ?>
+                                <?php
+                                    
+                                    if( !empty( $thongtin_hangmuc ) ){
+                                        echo "<pre>";
+                                        print_r( $thongtin_hangmuc );
+                                        echo "</pre>";
+                                        foreach( $thongtin_hangmuc as $key=> $value ){ ?>
+                                            <div class="hangmuc_items_wrapper">
+                                                <div class="accordionButton" id="a">
+                                                    <span># Hạng mục</span><span>:</span> <span class="span_ten_hangmuc"><?php if( !empty( $value['ten_hangmuc'] ) ){ echo esc_html( $value['ten_hangmuc'] ); } ?></span>
+                                                    <span class="plusMinus">+</span>
+                                                    <span><a href="#" class="remove_hangmuc_button">Xóa</a></span>
+                                                </div>
+                                                <div class="accordionContent">
+                                                    <table cellspacing="2" cellpadding="5" style="width: 100%;" class="form-table form-table-hangmuc">
+                                                        <tbody>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="tenhangmuc"><?php _e( 'Tên hạng mục', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <input type="hidden" name="hangmuc[<?php echo $key; ?>][id_hangmuc]" value="<?php if( !empty( $value['id_hangmuc'] ) ){ echo esc_attr( $value['id_hangmuc'] ); } ?>" />
+                                                                    <input  name="hangmuc[<?php echo $key; ?>][tenhangmuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ten_hangmuc'] ) ){ echo esc_html( $value['ten_hangmuc'] ); } ?>" class="code tenhangmuc"  required />
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="trangthai_hangmuc"><?php _e( 'Trạng thái', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <select  name="hangmuc[<?php echo $key; ?>][trangthai_hoanthanh]" class="code">
+                                                                        <option value="Đã hoàn thành" <?php if( !empty( $value['trangthai_hangmuc'] ) && $value['trangthai_hangmuc'] === 'Đã hoàn thành' ){ echo 'selected="selected"'; } ?> >Đã hoàn thành</option>
+                                                                        <option value="Đang triển khai" <?php if( !empty( $value['trangthai_hangmuc'] ) && $value['trangthai_hangmuc'] === 'Đang triển khai' ){ echo 'selected="selected"'; } ?>>Đang triển khai</option>
+                                                                        <option value="Chưa hoàn thành" <?php if( !empty( $value['trangthai_hangmuc'] ) && $value['trangthai_hangmuc'] === 'Chưa hoàn thành' ){ echo 'selected="selected"'; } ?>>Chưa hoàn thành</option>
+                                                                        <option value="Đã hủy" <?php if( !empty( $value['trangthai_hangmuc'] ) && $value['trangthai_hangmuc'] === 'Đã hủy' ){ echo 'selected="selected"'; } ?>>Đã hủy</option>
+                                                                    </select>
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="noidung_hangmuc"><?php _e( 'Nội dung', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <textarea name="hangmuc[<?php echo $key; ?>][noidung_hangmuc]"  class="code" style="width: 95%"><?php if( !empty( $value['noi_dung'] ) ){ echo esc_html( $value['noi_dung'] ); } ?></textarea>
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="hangmuc_tgbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <input value="<?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( $value['ngaybatdau'] ); } ?>" class="hangmuc_tgbatdau" name="hangmuc[<?php echo $key; ?>][thoigianbatdau]" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ){ echo esc_html( $item['thoigianbatdau'] ); };?>" class="code"  required />
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="hangmuc_tgketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <input class="hangmuc_tgketthuc" name="hangmuc[<?php echo $key; ?>][thoigianketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( $value['ngayketthuc'] ); } ?>" class="code"  required />
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <th valign="top" scope="row">
+                                                                    <label for="phantram_hoanthanh_hangmuc"><?php _e( 'Phần trăm hoàn thành', 'simple_plugin' ); ?></label>
+                                                                </th>
+                                                                <td>
+                                                                    <input type="range" class="percent_range_input" name="rangeInput[hangmuc][]" min="0" max="100"  value="<?php if( !empty( $value['phantram_hoanthanh'] ) ){ echo esc_html( $value['phantram_hoanthanh'] ); } ?>" style="width: 70%;" />  <!-- onchange="updateTextInput(this.value);" -->                                                     
+                                                                    <span class="percent_number"><?php if( !empty( $value['phantram_hoanthanh'] ) ){ echo esc_html( $value['phantram_hoanthanh'] ); } ?></span><span id="percent_unit">%</span>
+                                                                    <input type="hidden" class="input_percent_number" name="hangmuc[<?php echo $key; ?>][phantram_hoanthanh_hangmuc]" value="<?php if( !empty( $value['phantram_hoanthanh'] ) ){ echo esc_html( $value['phantram_hoanthanh'] ); } ?>"/>
+                                                                    
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="form-field">
+                                                                <?php 
+                                                                    $post_stt_cv = 0; 
+                                                                    if( !empty( $value['congviec'] ) ){ $post_stt_cv = count( $value['congviec'] ); }
+                                                                ?>
+                                                                <th valign="top" scope="row">
+                                                                    <h2><a class="add-new-h2" href="#" id="button_hangmuc_them_congviec" data-stt_cv="<?php echo $post_stt_cv; ?>" data-stt_hangmuc="<?php echo $so_thutu; ?>">Thêm công việc</a></h2>
+                                                                </th>
+                                                                <td>
+                                                                    <div class="hangmuc_congviec_wrapper_all" id="hangmuc_congviec_wrapper_all">
+                                                                        <?php
+                                                                            if( !empty( $value['congviec'] ) ){ 
+                                                                              foreach( $value['congviec'] as $k=>$v ){ ?>
+                                                                                <?php 
+                                                                                $unig_id = uniqid(); 
+                                                                                $stt_hangmuc = $key;
+                                                                                $stt_congviec = $k;
+                                                                                ?>
+                                                                                <div class="hangmuc_congviec_items_wrapper">
+                                                                                    <div class="accordionButton2" >
+                                                                                        <span># Công việc</span><span>:</span> <span class="span_ten_hangmuc_congviec"><?php if( !empty( $v['ten_congviec'] ) ){ echo esc_html( $v['ten_congviec'] ); }?></span>
+                                                                                        <span class="plusMinus">+</span>
+                                                                                        <span><a href="#" class="remove_hangmuc_cong_viec_button">Xóa</a></span>
+                                                                                    </div>
+                                                                                    <div class="accordionContent2">
+                                                                                        <div class="hangmuc_them_congviec" id="hangmuc_them_congviec_<?php echo $unig_id; ?>">
+                                                                                            <table cellspacing="2" cellpadding="5" style="width: 100%;" class="form-table form-table-hangmuc-congviec">
+                                                                                                <tbody>
+                                                                                                    <tr class="form-field">
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="hangmuc_tencongviec[]"><?php _e( 'Tên công việc', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <input name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tencongviec]" type="text" style="width: 95%" value="<?php if( !empty( $v['ten_congviec'] ) ){ echo esc_html( $v['ten_congviec'] ); }?>" class="code hangmuc_tencongviec"  required />
+                                                                                                            <input name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][id_congviec]" type="hidden" style="width: 95%" value="<?php if( !empty( $v['id_congviec'] ) ){ echo esc_html( $v['id_congviec'] ); }?>" class="code hangmuc_id_congviec"  required />
+                                                                                                        </td>
+                                                                                                    </tr>  
+                                                                                                    <tr class="form-field">
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][noidungcongviec]"><?php _e( 'Nội dung công việc', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <textarea name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][noidungcongviec]" style="width: 95%"class="code" required ><?php if( !empty( $v['noidung_congviec'] ) ){ echo esc_html( $v['noidung_congviec'] ); }?></textarea>
+                                                                                                        </td>
+                                                                                                    </tr> 
+                                                                                                    <tr class="form-field">
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="trangthai_hangmuc_congviec"><?php _e( 'Trạng thái', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <select  name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][trangthai_hoanthanh]" class="code">
+                                                                                                                <option value="Đã hoàn thành" <?php if( !empty( $v['trangthai_congviec'] ) && $v['trangthai_congviec'] == 'Đã hoàn thành' ){ echo 'selected="selected"'; } ?>  >Đã hoàn thành</option>
+                                                                                                                <option value="Đang triển khai" <?php if( !empty( $v['trangthai_congviec'] ) && $v['trangthai_congviec'] == 'Đang triển khai' ){ echo 'selected="selected"'; } ?>>Đang triển khai</option>
+                                                                                                                <option value="Chưa hoàn thành" <?php if( !empty( $v['trangthai_congviec'] ) && $v['trangthai_congviec'] == 'Chưa hoàn thành' ){ echo 'selected="selected"'; } ?>>Chưa hoàn thành</option>
+                                                                                                                <option value="Đã hủy" <?php if( !empty( $v['trangthai_congviec'] ) && $v['trangthai_congviec'] == 'Đã hủy' ){ echo 'selected="selected"'; } ?>>Đã hủy</option>
+                                                                                                            </select>
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                    <tr>
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="thanhvien_thamgia"><?php _e( 'Thành viên tham gia', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <div id="nhanvien_thamgia_hangmuc_congviec">
+                                                                                                                <?php $checkbox_name = "hangmuc[".$stt_hangmuc. "][congviec][". $stt_congviec ."][nhanvien_thamgia][]"; ?>
+                                                                                                                <?php 
+                                                                                                                    $list_nhanvien_tg = array(); 
+                                                                                                                    
+                                                                                                                    if( !empty( $v['nhanvien_thamgia'] ) ){
+                                                                                                                        $list_nhanvien_tg = explode(',', $v['nhanvien_thamgia'] );
+                                                                                                                    }
+                                                                                                                    
+                                                                                                                    if( !empty( $list_nhanvien_tg ) ){
+                                                                                                                        $list_deleted_nhanvien = TT_Nhanvien::tt_get_deleted_nhanvien();
+                                                                                                                        foreach( $list_nhanvien_tg as $key=>$value ){
+                                                                                                                            if( in_array( $value, $list_deleted_nhanvien ) ){
+                                                                                                                                unset( $list_nhanvien_tg[$key] );
+                                                                                                                            }
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                    
+                                                                                                                ?>  
+                                                                                                                <?php echo TT_Nhanvien::render_list_checkbox_nhanvien( 'show', $checkbox_name, $list_nhanvien_tg ); ?>
+                                                                                                            </div>
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                    <tr class="form-field">
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="hangmuc_congviec_tgbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <input class="hangmuc_congviec_tgbatdau" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_batdau]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngaybatdau'] ) ){ echo esc_html( $v['ngaybatdau'] ); }?>" class="code"  required />
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                    <tr class="form-field">
+                                                                                                        <th valign="top" scope="row">
+                                                                                                            <label for="hangmuc_congviec_tgketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
+                                                                                                        </th>
+                                                                                                        <td>
+                                                                                                            <input class="hangmuc_congviec_tgketthuc" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_ketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngayketthuc'] ) ){ echo esc_html( $v['ngayketthuc'] ); }?>" class="code"  required />
+                                                                                                        </td>
+                                                                                                    </tr> 
+                                                                                                    
+                                                                                                </tbody>    
+                                                                                            </table>
+                                                                                        </div>
+                                                                                      </div>
+                                                                                      <div class="clearfix"></div>
+                                                                                </div>        
+                                                                        <?php }//endforeach       
+                                                                            }//endif
+                                                                            
+                                                                        ?>
+                                                                    </div>
+                                                                    <?php //include( TT_DIR_PATH. '/templates/new_congviec.php' ); ?>
+                                                                </td>
+                                                            </tr><!-- end thêm công viêc -->    
+                                                            
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                            </div><!-- hangmuc_items_wrapper -->
+                                            
+                           <?php        }
+                                    }
+                                ?>
+                                <?php //include( TT_DIR_PATH . '/templates/new_hangmuc.php' ); ?>
+                            <?php } ?>
                         </div><!-- hangmuc_add_new -->
                         
                     </div>
@@ -414,6 +697,25 @@ class TT_Duan extends WP_List_Table{
 <?php        
     }//End function tt_new_duan_page_callback()
     
+    public static function tt_get_tt_hangmuc_by_id_duan( $id_duan ){
+        global $wpdb;
+        $table_hangmuc = $wpdb->prefix . 'hangmuc';
+        $table_congviec= $wpdb->prefix . 'congviec';
+        
+        $tt_hangmuc = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_hangmuc} WHERE id_duan = %d AND display_status = %s", $id_duan, 'show' ), ARRAY_A );
+    
+        if( is_array( $tt_hangmuc ) && !empty( $tt_hangmuc ) ){
+            foreach( $tt_hangmuc as $k=>$v ){
+                $tt_congviec = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_congviec} WHERE id_hangmuc = %d AND display_status = %s", $v['id_hangmuc'], 'show' ), ARRAY_A );
+                if( !empty( $tt_congviec ) ){
+                    $tt_hangmuc[$k]['congviec'] = $tt_congviec;
+                }
+            }
+            return $tt_hangmuc;
+        }else{
+            return array();
+        }
+    }
     
     public static function tt_validate_data_duan( $item ){
         $messages = array();
