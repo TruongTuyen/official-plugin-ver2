@@ -32,6 +32,8 @@ class TT_Teamwork{
         
         add_action( 'admin_menu', array( $this, 'register_setting_menu' ) );
         add_action( 'init', array( $this, 'tt_load_languages' ) );
+        
+        
     }
     
     public function create_table(){
@@ -387,16 +389,62 @@ class TT_Teamwork{
     
     public function tt_teamwork_callback(){ ?>
         <div class="wrap">
-            <div class="team_member"  >
-                <?php $num_member = self::tt_count_total_members(); ?>
-                <h2><?php _e( 'Tất cả các thành viên: ('. $num_member .')', 'simple_plugin' ); ?></h2>
-                <?php self::tt_get_team_member(); ?>
+            <div class="team_projects"  >
+                <h2><?php _e( 'Dự án', 'simple_plugin' ); ?></h2>
+                <div class="tablenav top">
+                   <div class="alignleft actions bulkactions">
+                      <form action="" method="post">                
+                      <!--<div class="filter_by_status">-->
+                          <label for="filter_trangthai_duan" class="screen-reader-text">Trạng thái</label>
+                          <select name="filter_trangthai_duan" id="filter_trangthai_duan">
+                             <option value="Đã hoàn thành">Đã hoàn thành</option>
+                             <option value="Đang triển khai">Đang triển khai</option>
+                             <option value="Chưa hoàn thành">Chưa hoàn thành</option>
+                             <option value="Đã hủy">Đã hủy</option>
+                          </select>
+                      <!--</div>-->
+                      
+                          <input type="text" class="input_field_time" placeholder="Thời gian bắt đầu" value="" id="filter_start_date" name="filter_start_date" />
+                          <input type="text" class="input_field_time" placeholder="Thời gian kết thúc" value="" id="filter_end_date" name="filter_end_date" />
+                  
+                          <input type="submit" id="loc_duan" class="button action" value="Lọc"/>
+                          <input type="submit" id="print_table" class="button action" value="In"/>
+                      </form>    
+                   </div>
+                </div>
             </div>
             
-            <div class="team_projects">
-                <?php $num_project = self::tt_count_total_projects(); ?>
-                <h2><?php _e( "Tất cả các dự án: ({$num_project})", "simple_plugin" ); ?></h2>
-                <?php self::tt_get_project_status(); ?>
+            <div class="table" id="thongtinduan">
+                <?php TT_Duan::tt_get_default_duan_info( array() ); ?>
+            </div>
+            
+            <!-- thông tin ve nhân viên -->
+            <div class="team_member"  >
+                <h2><?php _e( "Nhân viên", "simple_plugin" ); ?></h2>
+                <div class="tablenav top">
+                   <div class="alignleft actions bulkactions">
+                      <form action="" method="post">                
+                      <!--<div class="filter_by_status">-->
+                          <label for="filter_nhanvien_skill" class="screen-reader-text">Kỹ Năng</label>
+                          <select name="filter_nhanvien_skill" id="filter_nhanvien_skill">
+                             <option value="" selected="selected">Chọn kỹ năng</option>
+                             <?php TT_KyNang::tt_render_list_kynang_showed(); ?>
+                          </select>
+                          <select name="filter_nhanvien_project" id="filter_nhanvien_project">
+                             <option value="" selected="selected">Chọn dự án</option>
+                             <?php TT_Duan::tt_render_list_duan_showed(); ?>
+                          </select>
+                      <!--</div>-->
+                      
+                          <input type="submit" id="loc_nhanvien" class="button action" value="Lọc"/>
+                          <input type="submit" id="print_table_nhanvien" class="button action" value="In"/>
+                      </form>    
+                   </div>
+                </div>
+            </div>
+            
+            <div class="table" id="thongtinnhanvien">
+                <?php TT_Nhanvien::tt_get_default_nhanvien_info( array( 'project'=> 5 ) ); ?>
             </div>
             
             
@@ -404,66 +452,6 @@ class TT_Teamwork{
 <?php        
     }//End function tt_teamwork_callback()
     
-    public static function tt_count_total_members(){
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'nhanvien';
-        $all_member = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
-        
-        if( is_numeric( $all_member ) ){
-            return $all_member;
-        }else{
-            return 0;
-        }
-    }
-    
-    public static function tt_count_total_projects(){
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'duan';
-        $all_projects = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" );
-        
-        if( is_numeric( $all_projects ) ){
-            return $all_projects;
-        }else{
-            return 0;
-        }
-    }
-    
-    public static function tt_get_team_member(){
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'nhanvien';
-        
-        $all_member =  $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
-        
-        if( is_array( $all_member ) && !empty( $all_member ) ){
-            echo '<div class="team_member owl-carousel" data-nav="true" data-autoplay="false" data-dots="false" data-loop="true" data-margin="10" data-responsive=\'{"0":{"items":4},"600":{"items":4},"1000":{"items":4}}\' >';
-            foreach( $all_member as $key=>$value ){ 
-                $nhanvien_kynang = TT_Nhanvien::tt_get_selected_detail_kynang( $value['id_nhanvien'] );
-                $nhanvien_duan   = TT_Nhanvien::tt_get_selected_detail_duan( $value['id_nhanvien'] );
-                
-        ?>
-                <div class="each_member">
-                    <div class="member_avatar">
-                        <?php if( !empty( $value['avatar'] ) ){
-                            echo '<img src="'. $value['avatar'] .'" />';
-                        }else{
-                            self::tt_default_avatar( $value['gioitinh'] );
-                        } ?>
-                    </div>
-                    <div class="member_info">
-                        <?php if( $value['hoten'] ): ?><p class="member-name"><strong>Họ Tên:</strong> <?php echo '<a href="?page=new_nhanvien&id_nhanvien=' . $value['id_nhanvien'] . '">' . esc_html( $value['hoten'] ) . '</a>'; ?></p><?php endif; ?>
-                        <?php if( $value['namsinh'] ): ?><p class="member-dateofbirth"><strong>Năm sinh:</strong> <?php echo esc_html( $value['namsinh'] ); ?></p><?php endif; ?>
-                        <?php if( $nhanvien_kynang ): ?><p class="member-skills"><strong>Các kỹ năng:</strong> <?php echo $nhanvien_kynang; ?></p><?php endif; ?>
-                        <?php if( $nhanvien_duan ): ?><p class="member-projects"><strong>Các dự án:</strong> <?php echo $nhanvien_duan; ?></p><?php endif; ?>
-                        
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-<?php                
-            }
-            echo "</div>";
-        } 
-        
-    }
     
     public static function tt_get_member_joined_project( $project_id ){
         global $wpdb;
@@ -496,37 +484,7 @@ class TT_Teamwork{
         }
         
     }
-    public static function tt_get_project_status(){
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'duan';
-        
-        $all_member =  $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
-        
-        if( is_array( $all_member ) && !empty( $all_member ) ){
-            echo '<div class="team_project owl-carousel" data-nav="true" data-autoplay="false" data-dots="false" data-loop="true" data-margin="10" data-responsive=\'{"0":{"items":4},"600":{"items":4},"1000":{"items":4}}\' >';
-            foreach( $all_member as $key=>$value ){
-        ?>
-                <div class="each_member">
-                    <div class="prject_preview">
-                        <img src="<?php echo esc_url( TT_DIR_URL . '/assets/img/project_thumb.jpg' ); ?>" />
-                    </div>
-                    <div class="project_info">
-                        <?php if( $value['tenduan'] ): ?><p class="project-name"><strong>Tên dự án:</strong> <?php echo '<a href="?page=new_duan&id_duan=' . $value['id_duan'] . '">' . esc_html( $value['tenduan'] ) . '</a>'; ?></p><?php endif; ?>
-                        <?php if( $value['thoigianbatdau'] ): ?><p class="start_time"><strong>Thời gian:</strong> <?php echo  esc_html( date( 'd-m-Y', strtotime( $value['thoigianbatdau'] ) ) ); ?> <i class="fa fa-long-arrow-right"></i> <?php if( !empty( $value['thoigianketthuc'] ) ){ echo date( 'd-m-Y', strtotime( $value['thoigianketthuc'] ) ); } ?></p><?php endif; ?>
-                        
-                        <?php if( $value['trangthai'] ): ?><p class="projects-status"><strong>Trạng thái:</strong> <?php echo $value['trangthai']; ?></p><?php endif; ?>
-                        <p class="joined_member">
-                            <strong>Các thành viên tham gia:</strong>
-                            <?php $list_ids = self::tt_get_member_joined_project( $value['id_duan'] ); ?>
-                        </p>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-<?php                
-            }
-            echo "</div>";
-        } 
-    }
+    
     
     public static function tt_default_avatar( $gender = "Nam" ){
         if( $gender == "Nữ" || $gender == "nữ" || $gender == "nu" || $gender == "Nu" ){
@@ -551,7 +509,6 @@ class TT_Teamwork{
         add_submenu_page( 'tt_teamwork', __( "Danh sách dự án", "simple_plugin" ), __( "Danh sách dự án", "simple_plugin" ), "activate_plugins", "ds_duan", array( "TT_Duan", "tt_duan_page_callback") );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới dự án", "simple_plugin" ), __( "Thêm mới dự án", "simple_plugin" ), "activate_plugins", "new_duan", array( "TT_Duan", "tt_new_duan_page_callback") );
     
-        add_submenu_page( null, __( 'Custom page without menu', 'simple_plugin' ), __( 'Custom page without menu', 'simple_plugin' ), "activate_plugins", "new_custom_page", array( "TT_Duan", "tt_new_custom_page_callback") );
     }
     
     public function tt_load_languages(){
@@ -584,6 +541,8 @@ function enqueue_script(){
     wp_enqueue_script( 'jquer_choosen', TT_DIR_URL . 'assets/js/chosen.jquery.min.js', array('jquery'), null, true );
     wp_enqueue_script( 'jquery_function', TT_DIR_URL . 'assets/js/function.js', array('jquery'), null, true );
     wp_enqueue_script( 'jquery-carousel', TT_DIR_URL . 'assets/js/owl.carousel.min.js', array( 'jquery' ), null, true );
+    wp_enqueue_script( 'jquery-jQuery.print.js', TT_DIR_URL . 'assets/js/jQuery.print.js', array( 'jquery' ), null, true );
+    //jQuery.print.js
     
     wp_enqueue_style( 'jquery-ui-css', TT_DIR_URL . 'assets/css/jquery-ui.min.css', false, '' );
     wp_enqueue_style( 'jquery-ui-theme-css', TT_DIR_URL . 'assets/css/jquery-ui.theme.min.css', false, '' );

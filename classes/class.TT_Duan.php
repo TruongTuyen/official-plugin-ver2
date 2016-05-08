@@ -24,6 +24,9 @@ class TT_Duan extends WP_List_Table{
         
         add_action( 'wp_ajax_tt_ajax_delete_hangmuc_in_duan', array( $this, 'tt_ajax_delete_hangmuc_callback' ) );
         add_action( 'wp_ajax_nopriv_tt_ajax_delete_hangmuc_in_duan', array( $this, 'tt_ajax_delete_hangmuc_callback' ) );
+        
+        add_action( "wp_ajax_tt_ajax_filter_info_duan", array( $this, "tt_ajax_load_filter_duan_callback" ) );
+        add_action( "wp_ajax_nopriv_tt_ajax_filter_info_duan", array( $this, "tt_ajax_load_filter_duan_callback" ) );
     }
     
     function tt_ob_start(){
@@ -156,7 +159,7 @@ class TT_Duan extends WP_List_Table{
         $sortable = $this->get_sortable_columns();
         $this->_column_headers = array( $columns, $hidden, $sortable );
         $this->process_bulk_action();
-        $total_items = $wpdb->get_var( "SELECT COUNT(id_duan) FROM {$table_name}" );
+        $total_items = $wpdb->get_var( "SELECT COUNT(id_duan) FROM {$table_name} WHERE display_status = 'show'" );
 
         $paged   = isset( $_REQUEST['paged'] ) ? max(0, intval($_REQUEST['paged']) - 1) : 0;
         $offset  = $paged * $per_page;
@@ -987,10 +990,207 @@ class TT_Duan extends WP_List_Table{
 		die( wp_send_json( $result ) );
     }
     
+    public static function tt_get_all_duan_info( $args = array() ){
+        global $wpdb;
+        $table_duan = $wpdb->prefix . 'duan';
+        $table_doitac = $wpdb->prefix . 'doitac';
+        $table_nhanvien = $wpdb->prefix . 'nhanvien';
+        
+        if( empty( $args ) ){
+            //Nếu rỗng $args, thì lấy tất cả các dự án.
+            $query   = $wpdb->prepare( "SELECT * FROM {$table_duan} WHERE display_status = %s", 'show' );
+            $results = $wpdb->get_results( $query, ARRAY_A );
+            
+            foreach( $results as $key=>$value ){
+                $results[$key]['ten_doitac'] = '';
+                $results[$key]['ten_ql_duan'] = '';
+                
+                if( !empty( $value['id_doitac'] ) ){
+                    $get_name_doitac = $wpdb->prepare( "SELECT hoten_tendonvi FROM {$table_doitac} WHERE id_doitac = %d AND display_status = %s", $value['id_doitac'], 'show' );
+                    $ten_doitac = $wpdb->get_var( $get_name_doitac );
+                    
+                    if( !empty( $ten_doitac ) ){
+                        $results[$key]['ten_doitac'] = $ten_doitac;
+                    }
+                }
+                
+                if( !empty( $value['id_quanly_duan'] ) ){
+                    $get_name_ql_duan = $wpdb->prepare( "SELECT hoten FROM {$table_nhanvien} WHERE id_nhanvien = %d AND display_status = %s", $value['id_quanly_duan'], 'show' );
+                    $ten_ql_duan = $wpdb->get_var( $get_name_ql_duan );
+                    
+                    if(!empty( $ten_ql_duan ) ){
+                        $results[$key]['ten_ql_duan'] = $ten_ql_duan;
+                    }
+                }
+            }
+            return $results;
+            
+        }else{
+            $query = "SELECT * FROM {$table_duan} WHERE display_status = 'show'";
+            if( isset( $args['trangthai_duan'] ) && !empty( $args['trangthai_duan'] ) ){
+               $query .= " AND tinhtrangduan = '{$args['trangthai_duan']}'";    
+            }//isset trangthai_duan
+            
+            if( isset( $args['start_time'] ) || isset( $args['end_time'] ) ){
+                //Thông tin dự án filter by trạng thái 
+                $where_time = "";
+                if( !empty( $args['start_time'] ) && empty( $args['end_time'] ) ){
+                    $query .= " AND ngaybatdau >= '{$args['start_time']}'";
+                }elseif( !empty( $args['end_time'] ) && empty( $args['start_time'] ) ){
+                    $query .= " AND ngayketthuc <= '{$args['end_time']}'";
+                }elseif( !empty( $args['end_time'] ) && !empty( $args['start_time'] ) ){
+                    $query .= " AND ngayketthuc BETWEEN '{$args['start_time']}' AND '{$args['end_time']}'";
+                }
+            }//end isset start and date time
+            
+            $results = $wpdb->get_results( $query, ARRAY_A );
+            foreach( $results as $key=>$value ){
+                $results[$key]['ten_doitac'] = '';
+                $results[$key]['ten_ql_duan'] = '';
+                
+                if( !empty( $value['id_doitac'] ) ){
+                    $get_name_doitac = $wpdb->prepare( "SELECT hoten_tendonvi FROM {$table_doitac} WHERE id_doitac = %d AND display_status = %s", $value['id_doitac'], 'show' );
+                    $ten_doitac = $wpdb->get_var( $get_name_doitac );
+                    
+                    if( !empty( $ten_doitac ) ){
+                        $results[$key]['ten_doitac'] = $ten_doitac;
+                    }
+                }
+                
+                if( !empty( $value['id_quanly_duan'] ) ){
+                    $get_name_ql_duan = $wpdb->prepare( "SELECT hoten FROM {$table_nhanvien} WHERE id_nhanvien = %d AND display_status = %s", $value['id_quanly_duan'], 'show' );
+                    $ten_ql_duan = $wpdb->get_var( $get_name_ql_duan );
+                    
+                    if(!empty( $ten_ql_duan ) ){
+                        $results[$key]['ten_ql_duan'] = $ten_ql_duan;
+                    }
+                }
+            }
+            return $results;
+            
+        }
+    }
     
+    public function  tt_ajax_load_filter_duan_callback(){
+        $type = 'done';
+        check_ajax_referer( 'tt_ajax_form', 'security' );
+        
+        $args = array();
+        if( !empty( $_POST['post_trangthai_duan'] ) ){
+            $args['trangthai_duan'] = $_POST['post_trangthai_duan'];
+        }
+        
+        if( !empty( $_POST['post_start_date'] ) ){
+            $args['start_time'] = $_POST['post_start_date'];
+        }
+        
+        if( !empty( $_POST['post_end_date'] ) ){
+            $args['end_time'] = $_POST['post_end_date'];
+        }
+        
+        $results = self::tt_get_all_duan_info( $args );
+        if( !empty( $results ) ){
+            ob_start();
+        ?>
+        <div class="row header green">
+          <div class="cell">Tên dự án</div>
+          <div class="cell">Đối tác</div>
+          <div class="cell">Quản lý dự án</div>
+          <div class="cell">Ngày bắt đầu</div>
+          <div class="cell">Ngày kết thúc</div>
+          <div class="cell">Trạng thái</div>
+        </div>
+        <?php foreach( $results as $key=> $value ){ ?>
+        <div class="row">
+          <div class="cell"><?php if( !empty( $value['tenduan'] ) ){ echo esc_html( $value['tenduan'] ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['ten_doitac'] ) ){ echo esc_html( $value['ten_doitac'] ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['ten_ql_duan'] ) ){ echo esc_html( $value['ten_ql_duan'] ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( date( 'd-m-Y', strtotime( $value['ngaybatdau'] ) ) ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( date( 'd-m-Y', strtotime( $value['ngayketthuc'] ) ) ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['tinhtrangduan'] ) ){ echo esc_html( $value['tinhtrangduan'] ) ;} ?></div>
+        </div>
+        <?php } ?>    
+<?php       $data = ob_get_clean();     
+        }else{
+            ob_start();
+        ?>
+        
+        <div class="row header green">
+          <div class="cell">Tên dự án</div>
+          <div class="cell">Đối tác</div>
+          <div class="cell">Quản lý dự án</div>
+          <div class="cell">Thành viên tham gia</div>
+          <div class="cell">Ngày bắt đầu</div>
+          <div class="cell">Ngày kết thúc</div>
+          <div class="cell">Trạng thái</div>
+        </div>
+        <div class="row">
+          <div class="cell">Không có dữ liệu</div>
+          <div class="cell">...</div>
+          <div class="cell">...</div>
+          <div class="cell">...</div>
+          <div class="cell">...</div>
+          <div class="cell">...</div>
+          <div class="cell">...</div>
+        </div>
+<?php            
+            $data = ob_get_clean();
+        }
+        
+        $result = array( 
+            'type' => $type, 
+            'data' => $data 
+        );
+		die( wp_send_json( $result ) );
+    }
     
-
+    public static function tt_get_default_duan_info(){
+        $results = self::tt_get_all_duan_info( $args );
+        if( !empty( $results ) ){
+?>
+                <div class="row header green">
+                  <div class="cell">Tên dự án</div>
+                  <div class="cell">Đối tác</div>
+                  <div class="cell">Quản lý dự án</div>
+                  <div class="cell">Ngày bắt đầu</div>
+                  <div class="cell">Ngày kết thúc</div>
+                  <div class="cell">Trạng thái</div>
+                </div>
+            <?php foreach( $results as $key=> $value ){ ?>
+                <div class="row">
+                  <div class="cell"><?php if( !empty( $value['tenduan'] ) ){ echo esc_html( $value['tenduan'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['ten_doitac'] ) ){ echo esc_html( $value['ten_doitac'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['ten_ql_duan'] ) ){ echo esc_html( $value['ten_ql_duan'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( date( 'd-m-Y', strtotime( $value['ngaybatdau'] ) ) ) ;} ?></div>
+          <div class="cell"><?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( date( 'd-m-Y', strtotime( $value['ngayketthuc'] ) ) ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['tinhtrangduan'] ) ){ echo esc_html( $value['tinhtrangduan'] ) ;} ?></div>
+                </div>
+            <?php } ?> 
+        <?php }else{ ?>
+            <div class="row">
+              <div class="cell">Không có dữ liệu</div>
+              <div class="cell">...</div>
+              <div class="cell">...</div>
+              <div class="cell">...</div>
+              <div class="cell">...</div>
+              <div class="cell">...</div>
+              <div class="cell">...</div>
+            </div>
+<?php   } ?>
+<?php    
+    }//End function
     
+    public static function tt_render_list_duan_showed(){
+        global $wpdb;
+        $table = $wpdb->prefix . 'duan';
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT id_duan, tenduan FROM {$table} WHERE display_status = %s", "show" ), ARRAY_A );
+        
+        if( !empty( $results ) ){
+            foreach( $results as $key=>$value ){
+                echo '<option value="'.$value['id_duan'].'">'. $value['tenduan'] .'</option>';
+            }
+        }
+    }
     
 }//End class TT_Duan
 new TT_Duan();

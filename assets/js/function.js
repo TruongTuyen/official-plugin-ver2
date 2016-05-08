@@ -44,6 +44,9 @@ $(document).ready(function() {
         $(".hangmuc_tgbatdau_isseted").datepicker();
         $(".hangmuc_tgketthuc_isseted" ).datepicker();
         
+        $("#filter_start_date").datepicker();
+        $("#filter_end_date").datepicker();
+        
         //$("#format").change(function() {
         //$("#datepicker").datepicker("option", "dateFormat", $(this).val());
         //});
@@ -445,4 +448,83 @@ $(document).on('click','.remove_hangmuc_button_by_ajax',function(e){
         return false;
     }
   
+});
+
+//lọc dự án với ajax
+$(document).on('click','#loc_duan',function(e){
+    e.preventDefault();
+    
+  
+    var filter_trangthai_duan  = $("#filter_trangthai_duan").val();
+    var filter_start_date      = $("#filter_start_date").val();
+    var filter_end_date        = $("#filter_end_date").val();
+    
+    var data = {
+        action                : 'tt_ajax_filter_info_duan',
+        security              : tt_ajax_load_form.security,
+        post_trangthai_duan   : filter_trangthai_duan,
+        post_start_date       : filter_start_date,
+        post_end_date         : filter_end_date
+    }
+    
+    var t = $(this);
+    
+    $.post(ajaxurl, data, function(response){
+        console.log( response );
+       if( response.type == 'done' ){
+            $("#thongtinduan").html("");
+            $("#thongtinduan").html(response.data);
+       }
+    });
+    
+  
+});
+//Filter thông tin nhân viên
+//tt_ajax_filter_info_nhanvien
+$(document).on('click','#loc_nhanvien',function(e){
+    e.preventDefault();
+    var filter_nhanvien_skill    = $("#filter_nhanvien_skill").val();
+    var filter_nhanvien_project  = $("#filter_nhanvien_project").val();
+    
+    var data = {
+        action                : 'tt_ajax_filter_info_nhanvien',
+        security              : tt_ajax_load_form.security,
+        post_nhanvien_skill   : filter_nhanvien_skill,
+        post_nhanvien_project : filter_nhanvien_project,
+    }
+    
+    var t = $(this);
+    
+    $.post(ajaxurl, data, function(response){
+        console.log( response );
+       if( response.type == 'done' ){
+            console.log( response );
+            $("#thongtinnhanvien").html("");
+            $("#thongtinnhanvien").html(response.data);
+       }
+    });
+});
+
+//Print button
+$(function() {
+    $('#print_table').on('click', function(e) {
+        e.preventDefault();
+        //$.print("#thongtinduan");
+        $("#thongtinduan").print({
+            append : "Thông tin dự án -- Teamwork Manage Wordpress Plugin<br/>", 
+            prepend : "<br/>Teamwork Manage Wordpress Plugin",
+            doctype: '<!doctype html>'
+        });
+    });
+    
+    $('#print_table_nhanvien').on('click', function(e) {
+        e.preventDefault();
+        //$.print("#thongtinduan");
+        $("#thongtinnhanvien").print({
+            append : "Thông tin nhân viên -- Teamwork Manage Wordpress Plugin<br/>", 
+            prepend : "<br/>Teamwork Manage Wordpress Plugin",
+            doctype: '<!doctype html>'
+        });
+    });
+    
 });

@@ -256,5 +256,17 @@ class TT_KyNang extends WP_List_Table{
         
     }
     
+    public static function tt_render_list_kynang_showed(){
+        global $wpdb;
+        $table = $wpdb->prefix . 'kynang';
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT id_kynang, tenkynang FROM {$table} WHERE display_status = %s", "show" ), ARRAY_A );
+        
+        if( !empty( $results ) ){
+            foreach( $results as $key=>$value ){
+                echo '<option value="'.$value['id_kynang'].'">'. $value['tenkynang'] .'</option>';
+            }
+        }
+    }
+    
 }
  new TT_KyNang();

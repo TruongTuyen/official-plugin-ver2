@@ -12,6 +12,8 @@ class TT_Nhanvien extends WP_List_Table{
         
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_script' ) );
         
+        add_action( "wp_ajax_tt_ajax_filter_info_nhanvien", array( $this, "tt_ajax_load_filter_nhanvien_callback" ) );
+        add_action( "wp_ajax_nopriv_tt_ajax_filter_info_nhanvien", array( $this, "tt_ajax_load_filter_nhanvien_callback" ) );
         
     }
     
@@ -502,6 +504,143 @@ class TT_Nhanvien extends WP_List_Table{
         return $formated;
     }
     
+    public static function tt_get_default_nhanvien_info( $args = array() ){
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'nhanvien';
+        $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
+        $table_chitiet_duan   = $wpdb->prefix . 'chitiet_duan';
+        
+        if( empty( $args ) ){ //không có tham số
+            $results =  $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s ORDER BY namsinh ASC", 'show' ), ARRAY_A );
+            if( !empty( $results ) ){  ?>
+                <div class="row header green">
+                  <div class="cell">Họ Tên</div>
+                  <div class="cell">Năm Sinh</div>
+                  <div class="cell">Giới Tính</div>
+                  <div class="cell">Quê Quán</div>
+                </div>
+            <?php foreach( $results as $key=> $value ){ ?>
+                <div class="row">
+                  <div class="cell"><?php if( !empty( $value['hoten'] ) ){ echo esc_html( $value['hoten'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['namsinh'] ) ){ echo esc_html( $value['namsinh'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['gioitinh'] ) ){ echo esc_html( $value['gioitinh'] ) ;} ?></div>
+                  <div class="cell"><?php if( !empty( $value['quequan'] ) ){ echo esc_html( $value['quequan'] ) ;} ?></div>
+                </div>
+            <?php } ?> 
+        <?php }else{ ?>
+                <div class="row">
+                  <div class="cell">Không có dữ liệu</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                </div>
+<?php        } //end else
+        }else{ //có tham số
+            if( !empty( $args['skill'] ) ){
+                $get_id_nhanvien_by_skill_id =  $wpdb->get_results( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_chitiet_kynang} WHERE id_kynang = %d", $args['skill'] ), ARRAY_A );
+                $list_nhanvien = array();
+                
+                if( !empty( $get_id_nhanvien_by_skill_id ) ){
+                    foreach( $get_id_nhanvien_by_skill_id as $k=>$v ){
+                        $results =  $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s AND id_nhanvien = %d", 'show', $v['id_nhanvien'] ), ARRAY_A );
+                        $list_nhanvien[] = $results;
+                    }
+                }
+                /** ========================== **/
+                echo '
+                    <div class="row header green">
+                          <div class="cell">Họ Tên</div>
+                          <div class="cell">Năm Sinh</div>
+                          <div class="cell">Giới Tính</div>
+                          <div class="cell">Quê Quán</div>
+                    </div>
+                ';
+                if( !empty( $list_nhanvien ) ){  ?>
+                    <?php foreach( $list_nhanvien as $key=> $value ){ ?>
+                    <div class="row">
+                      <div class="cell"><?php if( !empty( $value['hoten'] ) ){ echo esc_html( $value['hoten'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['namsinh'] ) ){ echo esc_html( $value['namsinh'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['gioitinh'] ) ){ echo esc_html( $value['gioitinh'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['quequan'] ) ){ echo esc_html( $value['quequan'] ) ;} ?></div>
+                    </div>
+                    <?php }//end foreach ?> 
+        <?php   }else{ ?>
+                <div class="row">
+                  <div class="cell">Không có dữ liệu</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                </div>
+<?php           }  
+                /** ========================== **/
+            }//if $skill
+            
+            if( !empty( $args['project'] ) ){
+                $get_id_nhanvien_by_project_id =  $wpdb->get_results( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_chitiet_duan} WHERE id_duan = %d", $args['project'] ), ARRAY_A );
+                $list_nhanvien = array();
+                
+                if( !empty( $get_id_nhanvien_by_project_id ) ){
+                    foreach( $get_id_nhanvien_by_project_id as $k=>$v ){
+                        $results =  $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE display_status = %s AND id_nhanvien = %d", 'show', $v['id_nhanvien'] ), ARRAY_A );
+                        $list_nhanvien[] = $results;
+                    }
+                }    
+                /** ========================== **/
+                echo '
+                  <div class="row header green">
+                      <div class="cell">Họ Tên</div>
+                      <div class="cell">Năm Sinh</div>
+                      <div class="cell">Giới Tính</div>
+                      <div class="cell">Quê Quán</div>
+                  </div> ';
+                if( !empty( $list_nhanvien ) ){  ?>
+                    <?php foreach( $list_nhanvien as $key=> $value ){ ?>
+                    <div class="row">
+                      <div class="cell"><?php if( !empty( $value['hoten'] ) ){ echo esc_html( $value['hoten'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['namsinh'] ) ){ echo esc_html( $value['namsinh'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['gioitinh'] ) ){ echo esc_html( $value['gioitinh'] ) ;} ?></div>
+                      <div class="cell"><?php if( !empty( $value['quequan'] ) ){ echo esc_html( $value['quequan'] ) ;} ?></div>
+                    </div>
+                    <?php }//end foreach ?> 
+        <?php   }else{ ?>
+                <div class="row">
+                  <div class="cell">Không có dữ liệu</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                  <div class="cell">...</div>
+                </div>
+<?php           }  
+                /** ========================== **/
+            }//if $project
+            
+        }
+        
+        
+    }//end function
+    
+    public function tt_ajax_load_filter_nhanvien_callback(){
+        $type = 'done';
+        check_ajax_referer( 'tt_ajax_form', 'security' );
+        
+        $args = array();
+        if( !empty( $_POST['post_nhanvien_skill'] ) ){
+            $args['skill'] = $_POST['post_nhanvien_skill'];
+        }
+        
+        if( !empty( $_POST['post_nhanvien_project'] ) ){
+            $args['project'] = $_POST['post_nhanvien_project'];
+        }
+        ob_start();
+        self::tt_get_default_nhanvien_info( $args );
+        $results = ob_get_clean();
+        
+        $result = array( 
+            'type' => $type, 
+            'data' => $results 
+        );
+        die( wp_send_json( $result ) );
+        
+    }
     
     
 }
