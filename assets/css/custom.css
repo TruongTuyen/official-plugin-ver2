@@ -219,3 +219,7 @@ body {
 #thongtinduan{
     margin-top:20px;
 }
+
+.dont_show{
+    display:none;
+}

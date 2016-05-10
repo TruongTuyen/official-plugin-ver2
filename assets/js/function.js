@@ -528,3 +528,22 @@ $(function() {
     });
     
 });
+
+//ẩn hiện lọc nhân viên
+$(function() {
+    /**
+    $('#filter_with_skill').on('change', function(e) {
+        var id = $(this).val();
+        $("#filter_nhanvien_skill, #filter_nhanvien_project").addClass('dont_show');
+        $("#"+id).removeClass('dont_show');
+    });
+    **/
+    
+    $('#filter_with_skill').on('change', function(e) {
+        var id = $(this).val();
+        $("#filter_nhanvien_skill, #filter_nhanvien_project").removeClass('dont_show');
+        $("#"+id).addClass('dont_show');
+        $("#"+id).val(null);
+    });
+    
+});

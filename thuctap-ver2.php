@@ -425,12 +425,15 @@ class TT_Teamwork{
                    <div class="alignleft actions bulkactions">
                       <form action="" method="post">                
                       <!--<div class="filter_by_status">-->
-                          <label for="filter_nhanvien_skill" class="screen-reader-text">Kỹ Năng</label>
+                          <select name="filter_with_skill" id="filter_with_skill">
+                             <option value="filter_nhanvien_project" selected="selected">Lọc theo kỹ năng</option>
+                             <option value="filter_nhanvien_skill" >Lọc theo dự án</option>
+                          </select>
                           <select name="filter_nhanvien_skill" id="filter_nhanvien_skill">
                              <option value="" selected="selected">Chọn kỹ năng</option>
                              <?php TT_KyNang::tt_render_list_kynang_showed(); ?>
                           </select>
-                          <select name="filter_nhanvien_project" id="filter_nhanvien_project">
+                          <select name="filter_nhanvien_project" id="filter_nhanvien_project" class="dont_show">
                              <option value="" selected="selected">Chọn dự án</option>
                              <?php TT_Duan::tt_render_list_duan_showed(); ?>
                           </select>
@@ -438,12 +441,13 @@ class TT_Teamwork{
                       
                           <input type="submit" id="loc_nhanvien" class="button action" value="Lọc"/>
                           <input type="submit" id="print_table_nhanvien" class="button action" value="In"/>
+                          <div style="float: none; clear: both;"></div>
                       </form>    
                    </div>
                 </div>
             </div>
             
-            <div class="table" id="thongtinnhanvien">
+            <div class="table" id="thongtinnhanvien" style="margin-top:20px;">
                 <?php TT_Nhanvien::tt_get_default_nhanvien_info( array( 'project'=> 5 ) ); ?>
             </div>
             
