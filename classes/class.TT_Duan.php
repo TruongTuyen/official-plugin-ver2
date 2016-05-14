@@ -477,7 +477,7 @@ class TT_Duan extends WP_List_Table{
             <div id="ajax_box_notice">
                 
             </div>
-            <h2><?php if( $item['id_duan'] != 0 ){ _e( 'Sửa dự án', 'simple_plugin'); }else{ _e( 'Thêm mới dự án', 'simple_plugin'); } ?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
+            <h2><?php if( $item['id_duan'] != 0 ){ _e( 'Cập nhật thông tin dự án', 'simple_plugin'); }else{ _e( 'Thêm mới dự án', 'simple_plugin'); } ?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_duan');?>"><?php _e( 'Danh sách dự án', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
             <?php }// !empty( $notice ) ?>

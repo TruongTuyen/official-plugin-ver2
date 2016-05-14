@@ -300,7 +300,8 @@ class TT_Nhanvien extends WP_List_Table{
         ?>
         <div class="wrap">
             <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-            <h2><?php _e( 'Thêm mới nhân viên', 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_nhanvien');?>"><?php _e( 'Danh sách nhân viên', 'simple_plugin' ); ?></a></h2>
+            <?php $title = (!empty( $item['hoten'] )) ? __( "Cập nhật thông tin", "simple_plugin" ) : __( "Thêm mới", "simple_plugin" ) ?>
+            <h2><?php _e( "{$title} nhân viên", 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_nhanvien');?>"><?php _e( 'Danh sách nhân viên', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
             <?php }// !empty( $notice ) ?>
@@ -315,6 +316,13 @@ class TT_Nhanvien extends WP_List_Table{
                         <div id="post-body-content">
                             <table cellspacing="2" cellpadding="5" style="width: 100%;" class="form-table">
                                 <tbody>
+                                    <?php if( !empty( $item[ 'avatar' ] ) ){  ?>
+                                    <tr class="tt_avatar">
+                                        <td colspan="2">
+                                            <img src="<?php echo esc_url(  $item[ 'avatar' ] ); ?>" alt="avatar" />
+                                        </td>
+                                    </tr>
+                                    <?php } ?>
                                     <tr class="form-field">
                                         <th valign="top" scope="row">
                                         
@@ -378,6 +386,7 @@ class TT_Nhanvien extends WP_List_Table{
                                             <input id="upload-button" type="button" class="button" value="Chọn Avatar" />
                                         </td>
                                     </tr>
+                                    
                                 </tbody>
                             </table>
                             <input type="submit" value="<?php _e( 'Gửi', 'simple_plugin' ); ?>" id="submit" class="button-primary" name="submit"/>

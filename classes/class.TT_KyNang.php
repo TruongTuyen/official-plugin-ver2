@@ -194,7 +194,8 @@ class TT_KyNang extends WP_List_Table{
         ?>
         <div class="wrap">
             <div class="icon32 icon32-posts-post" id="icon-edit"><br /></div>
-            <h2><?php _e( "Thêm mới kỹ năng", "simple_plugin" ); ?>
+            <?php $title = (!empty( $item['tenkynang'] )) ? __( "Cập nhật thông tin", "simple_plugin" ) : __( "Thêm mới", "simple_plugin" ); ?>
+            <h2><?php _e( "{$title} kỹ năng", "simple_plugin" ); ?>
                 <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_ky_nang' ); ?>"><?php _e( "Danh sách kỹ năng", "simple_plugin" ); ?></a>
             </h2>
             <?php if( !empty( $notice ) ) { ?>

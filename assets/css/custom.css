@@ -223,3 +223,11 @@ body {
 .dont_show{
     display:none;
 }
+
+.tt_avatar img{
+    width:150px;
+    height:150px;
+    border:1px solid #ddd;
+    padding:10px;
+    border-radius:5px;
+}

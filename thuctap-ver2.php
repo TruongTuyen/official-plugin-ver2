@@ -227,7 +227,7 @@ class TT_Teamwork{
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 2, 
-            'hoten'             => 'Nguyen Thị Ba', 
+            'hoten'             => 'Nguyễn Thị Ba', 
             'namsinh'           => '1991', 
             'gioitinh'          => "Nữ",
             'quequan'           => 'Cao Bằng', 
@@ -501,18 +501,19 @@ class TT_Teamwork{
     public function register_setting_menu(){
         add_menu_page( __("TT Teamwork", "simple_plugin"), __("TT Teamwork","simple_plugin"), "activate_plugins", "tt_teamwork", array( $this, "tt_teamwork_callback" ) );
         
-        add_submenu_page( "tt_teamwork", __( "Danh sách nhân viên","simple_plugin" ), __( "Danh sách nhân viên","simple_plugin" ), "activate_plugins", "ds_nhanvien", array( "TT_Nhanvien", "tt_page_nhanvien_callback" ) );
-        add_submenu_page( "tt_teamwork", __( "Thêm mới nhân viên", "simple_plugin" ), __( "Thêm mới nhân viên", "simple_plugin" ), "activate_plugins", "new_nhanvien", array( "TT_Nhanvien", "tt_new_nhanvien_callback" ) );
-        
         add_submenu_page( 'tt_teamwork', __( "Danh sách kỹ năng", "simple_plugin" ), __( "Danh sách kỹ năng", "simple_plugin" ), "activate_plugins", "ds_ky_nang", array( "TT_KyNang", "tt_kynang_page_callback" ) );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới kỹ năng", "simple_plugin" ), __( "Thêm mới kỹ năng", "simple_plugin" ), "activate_plugins", "new_kynang", array( "TT_KyNang", "tt_new_kynang_callback" ) );
     
         add_submenu_page( 'tt_teamwork', __( "Danh sách đối tác", "simple_plugin" ), __( "Danh sách đối tác", "simple_plugin" ), "activate_plugins", "ds_doitac", array( "TT_Doitac", "tt_doitac_page_callback" ) );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới đối tác", "simple_plugin" ), __( "Thêm mới đối tác", "simple_plugin" ), "activate_plugins", "new_doitac", array( "TT_Doitac", "tt_new_doitac_callback" ) );
-    
+        
+        add_submenu_page( "tt_teamwork", __( "Danh sách nhân viên","simple_plugin" ), __( "Danh sách nhân viên","simple_plugin" ), "activate_plugins", "ds_nhanvien", array( "TT_Nhanvien", "tt_page_nhanvien_callback" ) );
+        add_submenu_page( "tt_teamwork", __( "Thêm mới nhân viên", "simple_plugin" ), __( "Thêm mới nhân viên", "simple_plugin" ), "activate_plugins", "new_nhanvien", array( "TT_Nhanvien", "tt_new_nhanvien_callback" ) );
+        
         add_submenu_page( 'tt_teamwork', __( "Danh sách dự án", "simple_plugin" ), __( "Danh sách dự án", "simple_plugin" ), "activate_plugins", "ds_duan", array( "TT_Duan", "tt_duan_page_callback") );
         add_submenu_page( 'tt_teamwork', __( "Thêm mới dự án", "simple_plugin" ), __( "Thêm mới dự án", "simple_plugin" ), "activate_plugins", "new_duan", array( "TT_Duan", "tt_new_duan_page_callback") );
-    
+        
+        
     }
     
     public function tt_load_languages(){

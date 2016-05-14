@@ -166,7 +166,8 @@ class TT_Doitac extends WP_List_Table{
         ?>
         <div class="wrap">
             <div class="icon32 icon32-posts-post" id="icon-edit"><br></div>
-            <h2><?php _e( 'Thêm mới đối tác', 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_doitac');?>"><?php _e( 'Danh sách đối tác', 'simple_plugin' ); ?></a></h2>
+            <?php $title = ( !empty( $item['hoten_tendonvi'] ) ) ? __( "Cập nhật thông tin", "simple_plugin" ) : __( "Thêm mới", "simple_plugin" ); ?>
+            <h2><?php _e( "{$title} đối tác", 'simple_plugin')?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=ds_doitac');?>"><?php _e( 'Danh sách đối tác', 'simple_plugin' ); ?></a></h2>
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
             <?php }// !empty( $notice ) ?>
