@@ -49,6 +49,10 @@ class TT_Duan extends WP_List_Table{
         return '<em>' . $item['qlduan'] . '</em>';
     }
     
+    function column_ngansach( $item ){
+        return '<em>' . $item['ngansach'] . '</em>';
+    }
+    
     function column_tinhtrangduan( $item ){
         return '<em>' . $item['tinhtrangduan'] . '</em>'; // trang thai: da hoan thanh, dang thuc hien, chua hoan thanh, da huy
     }
@@ -83,6 +87,7 @@ class TT_Duan extends WP_List_Table{
             'cb'                => '<input type="checkbox" />', //Tạo nut checkbox
             'id_duan'           => __( 'ID', 'simple_plugin' ),
             'tenduan'           => __( 'Tên dự án', 'simple_plugin' ),
+            'ngansach'          => __( 'Ngân sách', 'simple_plugin' ),
             'tendoitac'         => __( 'Đối tác', 'simple_plugin' ),
             'qlduan'            => __( 'Quản lý dự án', 'simple_plugin' ),
             
@@ -175,6 +180,9 @@ class TT_Duan extends WP_List_Table{
                 $tennhanvien = TT_Nhanvien::get_nhanvien_name_by_id( $v['id_quanly_duan'] );
                 $this->items[$k]['tendoitac'] = $tendoitac;
                 $this->items[$k]['qlduan']    = $tennhanvien;
+                $this->items[$k]['ngansach']  = number_format( $this->items[$k]['ngansach'], 0, ',', '.' ) . ' đ';
+                $this->items[$k]['ngaybatdau']  = date('d-m-Y', strtotime( $this->items[$k]['ngaybatdau'] ) );
+                $this->items[$k]['ngayketthuc'] = date('d-m-Y', strtotime( $this->items[$k]['ngayketthuc'] ) );
             }
         }
        
@@ -227,6 +235,7 @@ class TT_Duan extends WP_List_Table{
             'id_doitac'         => '',
             'id_quanly_duan'    => '',
             'tenduan'           => '',
+            'ngansach'          => 0,
             'ngaybatdau'        => '',
             'ngayketthuc'       => '',
             'tinhtrangduan'     => '',
@@ -506,6 +515,14 @@ class TT_Duan extends WP_List_Table{
                                         </th>
                                         <td>
                                             <input id="tenduan" name="tenduan" type="text" style="width: 95%" value="<?php if( !empty( $item['tenduan'] ) ) echo esc_attr( $item['tenduan'] );?>" class="code"  required />
+                                        </td>
+                                    </tr>
+                                    <tr class="form-field">
+                                        <th valign="top" scope="row">
+                                            <label for="ngansach"><?php _e( 'Ngân sách', 'simple_plugin' ); ?></label>
+                                        </th>
+                                        <td>
+                                            <input id="ngansach" name="ngansach" type="text" style="width: 95%" value="<?php if( !empty( $item['ngansach'] ) ) echo esc_attr( $item['ngansach'] );?>" class="code"  required />
                                         </td>
                                     </tr>
                                     <tr class="form-field">

@@ -53,6 +53,7 @@ class TT_Teamwork{
                 id_doitac BIGINT NOT NULL,
                 id_quanly_duan BIGINT NOT NULL,
                 tenduan VARCHAR(225) NOT NULL,
+                ngansach BIGINT NOT NULL,
                 ngaybatdau DATETIME NOT NULL,
                 ngayketthuc DATETIME NOT NULL,
                 tinhtrangduan VARCHAR(225) NOT NULL,
@@ -199,6 +200,7 @@ class TT_Teamwork{
             'id_doitac'          => 1,
             'id_quanly_duan'     => 1,
             'tenduan'            => 'Website bán hàng cho công ty Incomtech',
+            'ngansach'           => 10000000,
             'ngaybatdau'         => '2015-10-16',
             'ngayketthuc'        => '2015-11-16',
             'tinhtrangduan'      => 'Đã hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
@@ -211,8 +213,9 @@ class TT_Teamwork{
             'id_doitac'          => 2,
             'id_quanly_duan'     => 2,
             'tenduan'            => 'Website bất động sản',
-            'ngaybatdau'         => '2015-10-16',
-            'ngayketthuc'        => '2015-11-16',
+            'ngansach'           => 50000000,
+            'ngaybatdau'         => '2015-09-16',
+            'ngayketthuc'        => '2015-12-16',
             'tinhtrangduan'      => 'Đã hoàn thành', // Đã hoàn thành, Đang triển khai, Chưa hoàn thành, Đã hủy   
             'mota'               => '',
             'display_status'     => 'show'    
@@ -223,63 +226,81 @@ class TT_Teamwork{
             'hoten'             => 'Nguyễn Văn An', 
             'namsinh'           => '1990', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Thái Bình', 
+            'quequan'           => 'Thái Bình',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/8ea5fa69-cde5-4635-99e4-4e464079587b.jpg",
+            'display_status'    => 'show'  
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 2, 
             'hoten'             => 'Nguyễn Thị Ba', 
             'namsinh'           => '1991', 
             'gioitinh'          => "Nữ",
-            'quequan'           => 'Cao Bằng', 
+            'quequan'           => 'Cao Bằng',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/3-ea15c.jpg",
+            'display_status'    => 'show'  
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 3, 
             'hoten'             => 'Phạm Văn Bình', 
             'namsinh'           => '1996', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Quảng Ninh', 
+            'quequan'           => 'Quảng Ninh',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/THANHBINH.jpg",
+            'display_status'    => 'show'   
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 4, 
             'hoten'             => 'Nguyễn Văn Trường', 
             'namsinh'           => '1993', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Thái Nguyên', 
+            'quequan'           => 'Thái Nguyên',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/ngam-anh-the-ngo-tau-cuc-dang-yeu-cua-hot-boy-viet.jpg",
+            'display_status'    => 'show'  
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 5, 
             'hoten'             => 'Trần Bá Trịnh Trọng', 
             'namsinh'           => '1996', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Thái Nguyên', 
+            'quequan'           => 'Thái Nguyên',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/images.jpg",
+            'display_status'    => 'show'  
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 6, 
             'hoten'             => 'Nguyễn Thu Thủy', 
             'namsinh'           => '1996', 
             'gioitinh'          => "Nữ",
-            'quequan'           => 'Bắc Giang', 
+            'quequan'           => 'Bắc Giang',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/anh-the-mau-the.jpg",
+            'display_status'    => 'show'   
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 7, 
             'hoten'             => 'Phạm Thu Hương', 
             'namsinh'           => '1996', 
             'gioitinh'          => "Nữ",
-            'quequan'           => 'Quảng Ninh', 
+            'quequan'           => 'Quảng Ninh',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/anh_9.jpg",
+            'display_status'    => 'show'   
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 8, 
             'hoten'             => 'Nguyễn Văn Quân', 
             'namsinh'           => '1993', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Bắc Ninh', 
+            'quequan'           => 'Bắc Ninh',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/6544.png",
+            'display_status'    => 'show'   
         ));
         $wpdb->insert( $wpdb->prefix . 'nhanvien', array(
             'id_nhanvien'       => 9, 
             'hoten'             => 'Trần Văn Duy', 
             'namsinh'           => '1995', 
             'gioitinh'          => "Nam",
-            'quequan'           => 'Thái Nguyên', 
+            'quequan'           => 'Thái Nguyên',
+            'avatar'            => "http://localhost/official-plugin-ver2/wp-content/uploads/2016/05/139503389464254480.jpg",
+            'display_status'    => 'show'   
         ));
         //du lieu mau cho bang _kynang
         $wpdb->insert( $wpdb->prefix . 'kynang', array(
@@ -363,6 +384,11 @@ class TT_Teamwork{
         	'id_duan'           => 2,
         	'id_nhanvien'       => 2,
         ));
+        $wpdb->insert( $wpdb->prefix . 'chitiet_duan', array(
+            'id'                => 5,
+        	'id_duan'           => 2,
+        	'id_nhanvien'       => 3,
+        ));
         
         //du lieu cho bang _chitiet_kynang
         $wpdb->insert( $wpdb->prefix . 'chitiet_kynang', array(
@@ -383,6 +409,11 @@ class TT_Teamwork{
         $wpdb->insert( $wpdb->prefix . 'chitiet_kynang', array(
             'id'                => 4,
     	    'id_kynang'         => 2,
+    	    'id_nhanvien'       => 2,
+        ));
+        $wpdb->insert( $wpdb->prefix . 'chitiet_kynang', array(
+            'id'                => 5,
+    	    'id_kynang'         => 3,
     	    'id_nhanvien'       => 2,
         ));
     }  
@@ -448,7 +479,7 @@ class TT_Teamwork{
             </div>
             
             <div class="table" id="thongtinnhanvien" style="margin-top:20px;">
-                <?php TT_Nhanvien::tt_get_default_nhanvien_info( array( 'project'=> 5 ) ); ?>
+                <?php TT_Nhanvien::tt_get_default_nhanvien_info( array() ); ?>
             </div>
             
             
