@@ -1,5 +1,7 @@
 <?php
 class TT_Doitac extends WP_List_Table{
+    public static $delete_message = array();
+    
     public function __construct(){
         global $status, $page, $wpdb;
         parent::__construct(
@@ -68,18 +70,36 @@ class TT_Doitac extends WP_List_Table{
     function process_bulk_action(){
         global $wpdb;
         $table_doitac         = $wpdb->prefix . 'doitac'; 
+        $table_duan           = $wpdb->prefix . 'duan';
 
         if ( 'delete' === $this->current_action() && $_REQUEST['page'] == 'ds_doitac' ) {
             $id_doitac = isset( $_REQUEST['id_doitac'] ) ? $_REQUEST['id_doitac'] : array();
             if( is_array( $id_doitac ) && !empty( $id_doitac )) {
-                $data_update = array( 'display_status' => 'hidden' );
+                
+                 $data_update = array( 'display_status' => 'hidden' );
                  foreach( $id_doitac as $key=>$value ){
-                    $where_clause = array( 'id_doitac' => $value );
-                    $wpdb->update( $table_doitac, $data_update, $where_clause );
+                    $check_id_doitac = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_duan} WHERE id_doitac = %d AND display_status = %s", $value, "show" ) );
+                    
+                    if( $check_id_doitac ){ //Id nay đang liên quan tới duan -===> khong cho xóa
+                        $name_doitac = self::get_doitac_name_by_id( $value );
+                        self::$delete_message[] = "<p>Đối tác \"{$name_doitac}\" có thông tin liên quan tới một vài dự án, vui lòng kiểm tra lại thông tin dự án trước khi xóa.</p>";
+                    }else{
+                        $where_clause = array( 'id_doitac' => $value );
+                        $wpdb->update( $table_doitac, $data_update, $where_clause );
+                    }
+                    
                  }
+                 
                 //$wpdb->query( "DELETE FROM {$table_duan} WHERE id_duan IN( {$ids} )" );
             }else if( !empty( $id_doitac ) & is_numeric( $id_doitac ) ){
-                $wpdb->update( $table_doitac, array( 'display_status' => 'hidden' ), array( 'id_doitac' => $id_doitac ) );
+                $check_id_doitac = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_duan} WHERE id_doitac = %d AND display_status = %s", $id_doitac, "show" ) );
+                if( $check_id_doitac ){ //Id nay đang liên quan tới duan -===> khong cho xóa
+                    $name_doitac = self::get_doitac_name_by_id( $id_doitac );
+                    self::$delete_message[] = "<p>Đối tác \"{$name_doitac}\" có thông tin liên quan tới một vài dự án, vui lòng kiểm tra lại thông tin dự án trước khi xóa.</p>";
+                }else{
+                    $wpdb->update( $table_doitac, array( 'display_status' => 'hidden' ), array( 'id_doitac' => $id_doitac ) );
+                }
+                
             }
         }
     }
@@ -171,6 +191,7 @@ class TT_Doitac extends WP_List_Table{
             <?php if ( !empty( $notice ) ){ ?>
                 <div id="notice" class="error"><p><?php echo $notice ?></p></div>
             <?php }// !empty( $notice ) ?>
+            
             <?php if ( !empty($message) ){ ?>
                 <div id="message" class="updated"><p><?php echo $message ?></p></div>
             <?php }//!empty( $message ) ?>
@@ -227,8 +248,17 @@ class TT_Doitac extends WP_List_Table{
         $table->prepare_items();
         $message = '';
         if ('delete' === $table->current_action()) {
-            $message = '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Số bản ghi đã xóa: %d', 'custom_table_example'), count( $_REQUEST['id_doitac']) ) . '</p></div>';
+            if( !empty( self::$delete_message ) ){
+                foreach( self::$delete_message as $k=> $v ){
+                    echo '<div id="notice" class="error">'. $v .'</div>';
+                }
+            }else{
+                echo '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Đã xóa', 'custom_table_example') ) . '</p></div>';
+            }
+            
         }
+        
+        
 ?>
     <div class="wrap">
         <div class="icon32 icon32-posts-post" id="icon-edit"><br/></div>

@@ -1,5 +1,6 @@
 <?php
 class TT_Nhanvien extends WP_List_Table{
+    public static $delete_message = array();
     public function __construct(){
        global $status, $page;
         parent::__construct(
@@ -96,21 +97,48 @@ class TT_Nhanvien extends WP_List_Table{
         global $wpdb;
         $table_nhanvien       = $wpdb->prefix . 'nhanvien'; 
         $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
+        $table_chitiet_duan   = $wpdb->prefix . 'chitiet_duan';
+        $table_duan           = $wpdb->prefix . 'duan';
 
         if ( 'delete' === $this->current_action() && $_REQUEST['page'] == "ds_nhanvien" ) {
             $ids         = isset( $_REQUEST['ids'] ) ? $_REQUEST['ids'] : array();
             $id_nhanvien = isset( $_REQUEST['id_nhanvien'] ) ? $_REQUEST['id_nhanvien'] : '';
             
             if( is_array($ids) && !empty( $ids ) ) {
-                $ids = implode(',', $ids);
-                $wpdb->query( "DELETE FROM {$table_nhanvien} WHERE id_nhanvien IN( {$ids} )" );
                 foreach( $ids as $key=>$value ){
-                    $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $value ), array( '%d' ) );
+                    $check_nhanvien = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_chitiet_duan} WHERE id_nhanvien = %d", $value ) );
+                    if( $check_nhanvien ){
+                        $name_nhanvien = self::get_nhanvien_name_by_id( $value );
+                        self::$delete_message[] = "<p>Nhân viên <b>{$name_nhanvien}</b> đang tham gia một vài dự án, vui lòng kiểm tra lại trước khi xóa.</p>";
+                    }else{
+                        $check_nhanvien_in_duan = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_duan} WHERE id_quanly_duan = %d AND display_status = %s", $value, 'show' ) );
+                        if( $check_nhanvien_in_duan ){
+                            $name_nhanvien_2 = self::get_nhanvien_name_by_id( $value );
+                            self::$delete_message[] = "<p>Nhân viên <b>{$name_nhanvien_2}</b> đang tham gia quản lý một vài dự án, vui lòng kiểm tra lại trước khi xóa.</p>";
+                        }else{
+                            $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $value ), array( '%d' ) );
+                            $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$value}" );
+                        }
+                        
+                    }
                 }
-                $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien IN( {$ids} )" );
+                
             }elseif( $id_nhanvien != '' ){
-                $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $id_nhanvien ), array( '%d' ) );
-                $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$id_nhanvien}" );
+                $check_nhanvien = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_chitiet_duan} WHERE id_nhanvien = %d", $id_nhanvien ) );
+                if( $check_nhanvien ){
+                    $name_nhanvien = self::get_nhanvien_name_by_id( $id_nhanvien );
+                    self::$delete_message[] = "<p>Nhân viên <b>{$name_nhanvien}</b> đang tham gia một vài dự án, vui lòng kiểm tra lại trước khi xóa.</p>";
+                }else{
+                    $check_nhanvien_in_duan = $wpdb->get_var( $wpdb->prepare( "SELECT id_duan FROM {$table_duan} WHERE id_quanly_duan = %d AND display_status = %s", $id_nhanvien, 'show' ) );
+                    if( $check_nhanvien_in_duan ){
+                        $name_nhanvien_2 = self::get_nhanvien_name_by_id( $id_nhanvien );
+                        self::$delete_message[] = "<p>Nhân viên <b>{$name_nhanvien_2}</b> đang tham gia quản lý một vài dự án, vui lòng kiểm tra lại trước khi xóa.</p>";
+                    }else{
+                        $wpdb->update( $table_nhanvien, array( 'display_status'=>'hidden' ), array( 'id_nhanvien' => $id_nhanvien ), array( '%d' ) );
+                        $wpdb->query( "DELETE FROM {$table_chitiet_kynang} WHERE id_nhanvien = {$id_nhanvien}" );
+                    }
+                    
+                }
             } 
            
             
@@ -164,7 +192,14 @@ class TT_Nhanvien extends WP_List_Table{
         
         $message = '';
         if ('delete' === $table->current_action()) {
-            $message = '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Số bản ghi đã xóa: %d', 'custom_table_example'), count( $_REQUEST['id_duan']) ) . '</p></div>';
+            if( !empty( self::$delete_message ) ){
+                foreach( self::$delete_message as $k=>$v ){
+                    echo '<div id="notice" class="error">'. $v .'</div>';
+                }
+            }else{
+                echo  '<div class="updated below-h2" id="message"><p>' . sprintf( __( 'Đã xóa', 'custom_table_example') ) . '</p></div>';
+            }
+            
         }
 ?>
     <div class="wrap">

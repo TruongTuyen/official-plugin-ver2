@@ -1,5 +1,6 @@
 <?php
 class TT_KyNang extends WP_List_Table{
+    public static $message_delete = array();
     function __construct(){
         global $status, $page;
         parent::__construct(
@@ -60,19 +61,34 @@ class TT_KyNang extends WP_List_Table{
     
     public function process_bulk_action(){
         global $wpdb;
-        $table_kynang = $wpdb->prefix . 'kynang';
-        
+        $table_kynang         = $wpdb->prefix . 'kynang';
+        $table_chitiet_kynang = $wpdb->prefix . 'chitiet_kynang';
         
         if( $this->current_action() === 'delete' && $_REQUEST['page'] == 'ds_ky_nang' ){
             $ids = isset( $_REQUEST['id_kynang'] ) ? $_REQUEST['id_kynang'] : array();
-            
             if( is_array( $ids ) && !empty( $ids ) ){
                 foreach( $ids as $key=>$value ){
-                    $wpdb->update( $table_kynang, array( 'display_status' =>'hidden' ), array( 'id_kynang' => $value ) );
+                    //Kiểm tra nếu còn nhân viên đang sở hữu kỹ năng này thì không cho xóa
+                    $check_kynang = $wpdb->get_var( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_chitiet_kynang} WHERE id_kynang = %d", $value ) );
+                    if( $check_kynang ){
+                        $ten_kynang = self::tt_get_kynang_name_by_id( $value );
+                        self::$message_delete[] = "<p>Có một vài nhân viên đang sở hữu kỹ năng \"{$ten_kynang}\", vui lòng kiểm tra lại trước khi xóa. </p>";
+                    }else{
+                        $wpdb->update( $table_kynang, array( 'display_status' =>'hidden' ), array( 'id_kynang' => $value ) );
+                    }
+                    
                 }
                 
             }elseif( !empty( $ids ) && is_numeric( $ids ) ){
-                $wpdb->update( $table_kynang, array( 'display_status'=>'hidden'), array( 'id_kynang' => $ids ) );
+                $check_kynang = $wpdb->get_var( $wpdb->prepare( "SELECT id_nhanvien FROM {$table_chitiet_kynang} WHERE id_kynang = %d", $ids ) );
+                if( $check_kynang ){
+                    $ten_kynang = self::tt_get_kynang_name_by_id( $ids );
+                    self::$message_delete[] = "<p>Có một vài nhân viên đang sở hữu kỹ năng \"{$ten_kynang}\", vui lòng kiểm tra lại trước khi xóa. </p>";
+                    
+                }else{
+                    $wpdb->update( $table_kynang, array( 'display_status'=>'hidden'), array( 'id_kynang' => $ids ) );
+                }
+                
             }
             
         }
@@ -121,7 +137,14 @@ class TT_KyNang extends WP_List_Table{
         $message = '';
         
         if( $kynang->current_action() == 'delete' ){
-            $message = '<div class="updated below-h2" id="message"><p>' . sprintf(__('Số bản ghi đã xóa: %d', 'simple_plugin'), count( $_REQUEST['id_kynang']) ) . '</p></div>';
+            if( !empty( self::$message_delete ) ){
+                foreach( self::$message_delete as $k=>$v ){
+                    echo '<div id="notice" class="error">'. $v .'</div>';
+                }
+            }else{
+                echo '<div class="updated below-h2" id="message"><p>' . sprintf(__('Đã xóa', 'simple_plugin') ) . '</p></div>';
+            }
+            
         }
     ?>    
         <div class="wrap">
@@ -267,6 +290,19 @@ class TT_KyNang extends WP_List_Table{
                 echo '<option value="'.$value['id_kynang'].'">'. $value['tenkynang'] .'</option>';
             }
         }
+    }
+    
+    public static function tt_get_kynang_name_by_id( $id_kynang ){
+        global $wpdb;
+        $table_kynang = $wpdb->prefix . 'kynang';
+        
+        $name_kynang = '';
+        
+        $select_name = $wpdb->get_var( $wpdb->prepare( "SELECT tenkynang FROM {$table_kynang} WHERE id_kynang = %d AND display_status = %s", $id_kynang, "show" ) );
+        if( $select_name ){
+            $name_kynang = $select_name;
+        }
+        return $name_kynang;
     }
     
 }
