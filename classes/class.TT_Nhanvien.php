@@ -176,6 +176,27 @@ class TT_Nhanvien extends WP_List_Table{
             $this->items[$k]['cac_kynang'] = implode( ', ', $array_name_skill );
         }
         
+        if( isset( $_REQUEST['s'] ) && !empty( $_REQUEST['s'] ) ){
+            $this->items = $wpdb->get_results( 
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s AND ( id_nhanvien LIKE '%%%s%%' OR hoten LIKE '%%%s%%' OR namsinh LIKE '%%%s%%' OR gioitinh LIKE '%%%s%%' OR quequan LIKE '%%%s%%' )
+                ORDER BY $orderby $order LIMIT %d, %d", 
+                'show', 
+                $_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],
+                $offset, $per_page ), 
+                
+                ARRAY_A );
+        
+            foreach( $this->items as $k=>$v ){
+                $all_skill_each_staff = self::tt_get_all_kynang_by_id_nhanvien( $v['id_nhanvien'] );
+                $array_name_skill = array();
+                foreach( $all_skill_each_staff as $key=> $value ){
+                    $array_name_skill[] = $wpdb->get_var( $wpdb->prepare( "SELECT tenkynang FROM {$table_kynang} WHERE id_kynang = %d AND display_status = %s", $value, 'show' ) );
+                }
+                $this->items[$k]['cac_kynang'] = implode( ', ', $array_name_skill );
+            }
+        }
+        
+        
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
             'per_page'    => $per_page, // per page constant defined at top of method
@@ -183,6 +204,13 @@ class TT_Nhanvien extends WP_List_Table{
         ));
     }
     
+    public function search_box( $text, $input_id ) { ?>
+        <p class="search-box">
+          <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
+          <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>" />
+          <?php submit_button( $text, 'button', false, false, array('id' => 'search-submit') ); ?>
+      </p>
+<?php }
     
     public function tt_page_nhanvien_callback(){
         global $wpdb;
@@ -207,6 +235,7 @@ class TT_Nhanvien extends WP_List_Table{
         <h2><?php _e( 'Danh sách nhân viên', 'simple_plugin' )?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=new_nhanvien');?>"><?php _e( 'Thêm mới nhân viên', 'simple_plugin' )?></a></h2>
         <?php echo $message; ?>
         <form id="nhanvien-table" method="GET">
+            <?php $table->search_box( "Search", "search_nhanvien" ); ?>
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
             <?php $table->display(); ?>
         </form>

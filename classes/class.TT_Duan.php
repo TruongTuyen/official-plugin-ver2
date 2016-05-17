@@ -155,6 +155,16 @@ class TT_Duan extends WP_List_Table{
             
         }
     }
+    
+    public function search_box( $text, $input_id ) { ?>
+        <p class="search-box">
+          <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
+          <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>" />
+          <?php submit_button( $text, 'button', false, false, array('id' => 'search-submit') ); ?>
+      </p>
+<?php }
+
+
     function prepare_items(){
         global $wpdb;
         $table_name = $wpdb->prefix . 'duan';
@@ -185,6 +195,28 @@ class TT_Duan extends WP_List_Table{
                 $this->items[$k]['ngayketthuc'] = date('d-m-Y', strtotime( $this->items[$k]['ngayketthuc'] ) );
             }
         }
+        
+        if( isset( $_REQUEST['s'] ) && !empty( $_REQUEST['s'] ) ){
+            $this->items = $wpdb->get_results( 
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s AND ( id_duan LIKE '%%%s%%' OR tenduan LIKE '%%%s%%' OR tinhtrangduan LIKE '%%%s%%' OR mota LIKE '%%%s%%' OR ngansach LIKE '%%%s%%' ) ORDER BY $orderby $order LIMIT %d OFFSET %d",
+                'show', 
+                $_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],$_REQUEST['s'],
+                $per_page, 
+                $offset 
+            ), ARRAY_A );
+            
+            if( !empty( $this->items ) ){
+                foreach( $this->items as $k=>$v ){
+                    $tendoitac = TT_Doitac::get_doitac_name_by_id( $v['id_doitac'] );
+                    $tennhanvien = TT_Nhanvien::get_nhanvien_name_by_id( $v['id_quanly_duan'] );
+                    $this->items[$k]['tendoitac'] = $tendoitac;
+                    $this->items[$k]['qlduan']    = $tennhanvien;
+                    $this->items[$k]['ngansach']  = number_format( $this->items[$k]['ngansach'], 0, ',', '.' ) . ' đ';
+                    $this->items[$k]['ngaybatdau']  = date('d-m-Y', strtotime( $this->items[$k]['ngaybatdau'] ) );
+                    $this->items[$k]['ngayketthuc'] = date('d-m-Y', strtotime( $this->items[$k]['ngayketthuc'] ) );
+                }
+            } 
+        }//End isset search query
        
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
@@ -209,6 +241,7 @@ class TT_Duan extends WP_List_Table{
         <h2><?php _e( 'Danh sách dự án', 'simple_plugin' )?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=new_duan');?>"><?php _e( 'Thêm mới dự án', 'simple_plugin' )?></a></h2>
         <?php echo $message; ?>
         <form id="duan-table" method="GET">
+            <?php $table->search_box( "Search", "search_duan" ); ?>
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
             <?php $table->display(); ?>
         </form>

@@ -103,6 +103,15 @@ class TT_Doitac extends WP_List_Table{
             }
         }
     }
+    public function search_box( $text, $input_id ) { ?>
+        <p class="search-box">
+          <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
+          <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>" />
+          <?php submit_button( $text, 'button', false, false, array('id' => 'search-submit') ); ?>
+      </p>
+<?php }
+    
+    
     function prepare_items(){
         global $wpdb;
         $table_name = $wpdb->prefix . 'doitac';
@@ -121,7 +130,11 @@ class TT_Doitac extends WP_List_Table{
         $order   = (isset( $_REQUEST['order'] ) && in_array($_REQUEST['order'], array( 'asc', 'desc' ))) ? $_REQUEST['order'] : 'asc';
  
         $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d OFFSET %d", 'show' ,$per_page, $offset ), ARRAY_A );
-
+        
+        if( isset( $_REQUEST['s'] ) && !empty( $_REQUEST['s'] ) ){
+            $this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $table_name WHERE display_status = %s AND ( id_doitac LIKE '%%%s%%' OR hoten_tendonvi LIKE '%%%s%%' OR loai LIKE '%%%s%%' OR mota LIKE '%%%s%%') ORDER BY $orderby $order LIMIT %d OFFSET %d", 'show',$_REQUEST['s'], $_REQUEST['s'], $_REQUEST['s'],$_REQUEST['s'] ,$per_page, $offset ), ARRAY_A );
+        }
+        
         $this->set_pagination_args(array(
             'total_items' => $total_items, // total items defined above
             'per_page'    => $per_page, // per page constant defined at top of method
@@ -265,6 +278,7 @@ class TT_Doitac extends WP_List_Table{
         <h2><?php _e( 'Danh sách đối tác', 'simple_plugin' )?> <a class="add-new-h2" href="<?php echo get_admin_url( get_current_blog_id(), 'admin.php?page=new_doitac');?>"><?php _e( 'Thêm mới đối tác', 'simple_plugin' )?></a></h2>
         <?php echo $message; ?>
         <form id="duan-table" method="GET">
+            <?php $table->search_box("Search","search_query"); ?>
             <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
             <?php $table->display(); ?>
         </form>

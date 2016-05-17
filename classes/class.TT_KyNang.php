@@ -58,6 +58,13 @@ class TT_KyNang extends WP_List_Table{
             'delete' => 'Xóa dữ liệu'
         );
     }
+    public function search_box( $text, $input_id ) { ?>
+        <p class="search-box">
+          <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
+          <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>" />
+          <?php submit_button( $text, 'button', false, false, array('id' => 'search-submit') ); ?>
+      </p>
+<?php }
     
     public function process_bulk_action(){
         global $wpdb;
@@ -119,6 +126,19 @@ class TT_KyNang extends WP_List_Table{
             "SELECT * FROM $table_name WHERE display_status = %s ORDER BY $orderby $order LIMIT %d OFFSET %d", 'show', $per_page, $offset
         ), ARRAY_A );
         
+        if( isset( $_REQUEST['s'] ) && !empty( $_REQUEST['s'] ) ){
+            $this->items = $wpdb->get_results( $wpdb->prepare(
+            "SELECT * FROM $table_name WHERE display_status = %s AND (id_kynang LIKE '%%%s%%' OR tenkynang LIKE '%%%s%%' OR mota LIKE '%%%s%%')
+            ORDER BY $orderby $order LIMIT %d OFFSET %d", 
+            'show', 
+            $_REQUEST['s'],
+            $_REQUEST['s'],
+            $_REQUEST['s'],
+            $per_page, 
+            $offset
+        ), ARRAY_A );
+        }
+        
         $this->set_pagination_args(
             array(
                 'total_items' => $total_items, 
@@ -155,6 +175,7 @@ class TT_KyNang extends WP_List_Table{
             <?php echo $message; ?>
         
             <form id="persons-table" method="GET">
+                <?php $kynang->search_box("Search","search_query"); ?>
                 <input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>"/>
                 <?php $kynang->display(); ?>
             </form>
