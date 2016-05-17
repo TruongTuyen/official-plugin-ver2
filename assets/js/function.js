@@ -39,7 +39,8 @@ $(document).ready(function() {
         //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
         $("#hangmuc_congviec_tgbatdau").datepicker();
         $("#hangmuc_congviec_tgketthuc" ).datepicker();
-        
+        $(".hangmuc_congviec_tgbatdau").datepicker();
+        $(".hangmuc_congviec_tgketthuc" ).datepicker();
         //hangmuc_congviec_tgbatdau,hangmuc_congviec_tgketthuc
         $(".hangmuc_tgbatdau_isseted").datepicker();
         $(".hangmuc_tgketthuc_isseted" ).datepicker();

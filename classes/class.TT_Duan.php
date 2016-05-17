@@ -573,7 +573,7 @@ class TT_Duan extends WP_List_Table{
                                             <label for="ngaybatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <input id="thoigianbatdau" name="ngaybatdau" type="text" style="width: 95%" value="<?php if( !empty( $item['ngaybatdau'] ) ) echo esc_attr( $item['ngaybatdau'] );?>" class="code"  required />
+                                            <input id="thoigianbatdau" name="ngaybatdau" type="text" style="width: 95%" value="<?php if( !empty( $item['ngaybatdau'] ) ) echo self::tt_format_datetime( esc_attr( $item['ngaybatdau'] ) );?>" class="code"  required />
                                         </td>
                                     </tr>
                                     <tr class="form-field">
@@ -581,7 +581,7 @@ class TT_Duan extends WP_List_Table{
                                             <label for="ngayketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
                                         </th>
                                         <td>
-                                            <input id="thoigianketthuc" name="ngayketthuc" type="text" style="width: 95%" value="<?php if( !empty( $item['ngayketthuc'] ) ) echo esc_attr( $item['ngayketthuc'] );?>" class="code"  required />
+                                            <input id="thoigianketthuc" name="ngayketthuc" type="text" style="width: 95%" value="<?php if( !empty( $item['ngayketthuc'] ) ) echo self::tt_format_datetime( esc_attr( $item['ngayketthuc'] ) );?>" class="code"  required />
                                         </td>
                                     </tr>
                                     <tr class="form-field">
@@ -700,7 +700,7 @@ class TT_Duan extends WP_List_Table{
                                                                     <label for="hangmuc_tgbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
                                                                 </th>
                                                                 <td>
-                                                                    <input value="<?php if( !empty( $value['ngaybatdau'] ) ){ echo esc_html( $value['ngaybatdau'] ); } ?>" class="hangmuc_tgbatdau_isseted" name="hangmuc[<?php echo $key; ?>][thoigianbatdau]" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ){ echo esc_html( $item['thoigianbatdau'] ); };?>" class="code"  required />
+                                                                    <input value="<?php if( !empty( $value['ngaybatdau'] ) ){ echo self::tt_format_datetime( esc_html( $value['ngaybatdau'] ) ); } ?>" class="hangmuc_tgbatdau_isseted" name="hangmuc[<?php echo $key; ?>][thoigianbatdau]" type="text" style="width: 95%" value="<?php if( !empty( $item['thoigianbatdau'] ) ){ echo esc_html( $item['thoigianbatdau'] ); };?>" class="code"  required />
                                                                 </td>
                                                             </tr>
                                                             <tr class="form-field">
@@ -708,7 +708,7 @@ class TT_Duan extends WP_List_Table{
                                                                     <label for="hangmuc_tgketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
                                                                 </th>
                                                                 <td>
-                                                                    <input class="hangmuc_tgketthuc_isseted" name="hangmuc[<?php echo $key; ?>][thoigianketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ngayketthuc'] ) ){ echo esc_html( $value['ngayketthuc'] ); } ?>" class="code"  required />
+                                                                    <input class="hangmuc_tgketthuc_isseted" name="hangmuc[<?php echo $key; ?>][thoigianketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $value['ngayketthuc'] ) ){ echo self::tt_format_datetime( esc_html( $value['ngayketthuc'] ) ); } ?>" class="code"  required />
                                                                 </td>
                                                             </tr>
                                                             <tr class="form-field">
@@ -814,7 +814,7 @@ class TT_Duan extends WP_List_Table{
                                                                                                             <label for="hangmuc_congviec_tgbatdau"><?php _e( 'Thời gian bắt đầu', 'simple_plugin' ); ?></label>
                                                                                                         </th>
                                                                                                         <td>
-                                                                                                            <input class="hangmuc_congviec_tgbatdau" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_batdau]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngaybatdau'] ) ){ echo esc_html( $v['ngaybatdau'] ); }?>" class="code"  required />
+                                                                                                            <input class="hangmuc_congviec_tgbatdau" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_batdau]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngaybatdau'] ) ){ echo self::tt_format_datetime( esc_html( $v['ngaybatdau'] ) ); }?>" class="code"  required />
                                                                                                         </td>
                                                                                                     </tr>
                                                                                                     <tr class="form-field">
@@ -822,7 +822,7 @@ class TT_Duan extends WP_List_Table{
                                                                                                             <label for="hangmuc_congviec_tgketthuc"><?php _e( 'Thời gian kết thúc', 'simple_plugin' ); ?></label>
                                                                                                         </th>
                                                                                                         <td>
-                                                                                                            <input class="hangmuc_congviec_tgketthuc" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_ketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngayketthuc'] ) ){ echo esc_html( $v['ngayketthuc'] ); }?>" class="code"  required />
+                                                                                                            <input class="hangmuc_congviec_tgketthuc" name="hangmuc[<?php echo $stt_hangmuc; ?>][congviec][<?php echo $stt_congviec; ?>][tg_ketthuc]" type="text" style="width: 95%" value="<?php if( !empty( $v['ngayketthuc'] ) ){ echo self::tt_format_datetime( esc_html( $v['ngayketthuc'] ) ); }?>" class="code"  required />
                                                                                                         </td>
                                                                                                     </tr> 
                                                                                                     
@@ -1240,6 +1240,11 @@ class TT_Duan extends WP_List_Table{
                 echo '<option value="'.$value['id_duan'].'">'. $value['tenduan'] .'</option>';
             }
         }
+    }
+    
+    public static function tt_format_datetime( $string, $type = 'Y/m/d' ){
+        $timestamp = strtotime( $string );
+        return date( $type, $timestamp );
     }
     
 }//End class TT_Duan
